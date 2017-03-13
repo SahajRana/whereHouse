@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/menu_add"
+            android:icon="@android:drawable/ic_menu_add"
+            android:title="add" />
+
+        <item
+            android:id="@+id/menu_save"
+            android:icon="@android:drawable/ic_menu_save"
+            android:title="save" />
+
+        <item
+            android:id="@+id/menu_call"
+            android:icon="@android:drawable/ic_menu_call"
+            android:title="call" />
+
+        <item
+            android:id="@+id/menu_camera"
+            android:icon="@android:drawable/ic_menu_camera"
+            android:title="camera" />
+
+        <item
+            android:id="@+id/menu_delete"
+            android:icon="@android:drawable/ic_menu_delete"
+            android:title="delete" />
+
+        <item
+            android:id="@+id/menu_zoom"
+            android:icon="@android:drawable/ic_menu_zoom"
+            android:title="zoom" />
+
+        <item
+            android:id="@+id/menu_gallery"
+            android:icon="@android:drawable/ic_menu_gallery"
+            android:title="galery" />
+
+        <item
+            android:id="@+id/menu_help"
+            android:icon="@android:drawable/ic_menu_help"
+            android:title="help" />
+
+    </group>
+</menu>
