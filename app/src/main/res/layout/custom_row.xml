@@ -30,7 +30,7 @@
         android:text="Dummy Text"
         android:textStyle="bold"
         android:textAllCaps="true"
-        android:textColor="#b7ffffff"
+        android:textColor="#434343"
         android:layout_gravity="center"
         android:layout_centerVertical="true"
         android:layout_toEndOf="@+id/listIcon"

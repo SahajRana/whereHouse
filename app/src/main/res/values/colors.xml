@@ -15,8 +15,8 @@
     <color name="black_alpha_30">#4D000000</color>
     <color name="snackbar_back_color">#FF384C56</color>
     <color name="snackbar_back_color2">#d3e74c3c</color>
-    <color name="navi_drawer_on_selection">#FF505050</color>
-    <color name="navi_drawer_on_pressed">#494949</color>
+    <color name="navi_drawer_on_selection">#cfcfcf</color>
+    <color name="navi_drawer_on_pressed">#cfcfcf</color>
 
     <color name="black_overlay">#66000000</color>
     <color name="SwipeScreen1">#027a6b</color>
@@ -42,4 +42,6 @@
     <color name="colorHighlightBackground">#c2c2c2</color>
     <color name="colorDarkBackground">#61696c</color>
     <color name="colorTextPrimary">#444444</color>
+
+    <color name="redMap">#6bd02d2e</color>
 </resources>

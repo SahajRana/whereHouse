@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -9,8 +9,12 @@
     </style>
 
     <style name="MyCustomThemeToolbar" parent="ThemeOverlay.AppCompat.Dark">
-        <item name="android:textColorPrimary">#C5CAE9</item>
-        <item name="android:textColorSecondary">#E91E63</item>
+        <item name="android:textColorPrimary">#d1d6ef</item>
+        <item name="android:textColorSecondary">#ffffff</item>
+    </style>
 
+    <style name="MyCustomOverlay" parent="ThemeOverlay.AppCompat.Dark">
+        <item name="android:background">#feffff</item>
+        <item name="android:textColorPrimary">#4d4d4d</item>
     </style>
 </resources>

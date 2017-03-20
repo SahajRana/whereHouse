@@ -54,10 +54,10 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
         holder.icona.setImageResource(current.iconID);
         if(selected_position == position){
             // Here I am just highlighting the background
-            holder.titlea.setTextColor(Color.parseColor("#FFFFFFFF"));
+            holder.titlea.setTextColor(Color.parseColor("#434343"));
             holder.itemView.setBackgroundResource(R.color.navi_drawer_on_selection);
         }else{
-            holder.titlea.setTextColor(Color.parseColor("#b7ffffff"));
+            holder.titlea.setTextColor(Color.parseColor("#545454"));
             holder.itemView.setBackgroundColor(Color.TRANSPARENT);
         }
        // holder.itemView.setOnClickListener(new View.OnClickListener() {
