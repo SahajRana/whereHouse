@@ -14,13 +14,24 @@
         android:id="@+id/containerDrawerImage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#fda612">
-
-        <LinearLayout
-            android:clickable="true"
-            android:background="#fda612"
+        >
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="150dp"/>
+            android:layout_height="wrap_content">
+            <ImageView
+                android:adjustViewBounds="true"
+                android:scaleType="centerCrop"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/map_notiback"/>
+            <LinearLayout
+                android:clickable="true"
+                android:background="#5c1f222b"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"/>
+        </FrameLayout>
+
+
         <ImageView
             android:id="@+id/ProfileDP"
             android:layout_width="80dp"
@@ -38,10 +49,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="#060815"
+            android:textColor="#f5f5f5"
             android:layout_gravity="center_vertical"
             android:visibility="visible"
-            android:hint="John Mark"
+            android:text="John Mark"
             />
     </RelativeLayout>
 
