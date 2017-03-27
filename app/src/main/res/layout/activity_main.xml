@@ -5,6 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
     tools:context="com.tekraiders.wherehouse.wherehouse.MainActivity">
 
     <android.support.v4.widget.DrawerLayout
@@ -27,11 +28,124 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
-            <View
-                android:id="@+id/toolbar_shadow"
+
+            <FrameLayout
+                android:layout_gravity="end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <android.support.design.widget.FloatingActionButton
+                    android:visibility="gone"
+                    android:id="@+id/main_fab_back"
+                    android:src="@drawable/ic_arrow_back_24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="2dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"/>
+                <com.getbase.floatingactionbutton.FloatingActionsMenu
+                    android:visibility="visible"
+                    android:id="@+id/main_fab_multi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    fab:fab_addButtonColorNormal="@color/white_fab"
+                    fab:fab_addButtonColorPressed="@color/white_pressed"
+                    fab:fab_addButtonPlusIconColor="@color/half_black"
+                    fab:fab_labelStyle="@style/menu_labels_style"
+                    android:layout_marginBottom="2dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp">
+
+                    <com.getbase.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/action_a"
+                        fab:fab_size="mini"
+                        fab:fab_icon="@drawable/tornado"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        fab:fab_colorNormal="@color/white_fab"
+                        fab:fab_title="Cyclone Layer"
+                        fab:fab_colorPressed="@color/white_pressed"/>
+
+                    <com.getbase.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/action_b"
+                        fab:fab_size="mini"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        fab:fab_icon="@drawable/earthquake"
+                        fab:fab_colorNormal="@color/white_fab"
+                        fab:fab_title="Earthquake Layer"
+                        fab:fab_colorPressed="@color/white_pressed"/>
+                    <com.getbase.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/action_c"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        fab:fab_size="mini"
+                        fab:fab_icon="@drawable/flood"
+                        fab:fab_colorNormal="@color/white_fab"
+                        fab:fab_title="Flood Layer"
+                        fab:fab_colorPressed="@color/white_pressed"/>
+                    <com.getbase.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/action_d"
+                        android:layout_width="wrap_content"
+                        fab:fab_size="mini"
+                        fab:fab_icon="@drawable/landslide"
+                        android:layout_height="wrap_content"
+                        fab:fab_colorNormal="@color/white_fab"
+                        fab:fab_title="Landslide Layer"
+                        fab:fab_colorPressed="@color/white_pressed"/>
+                    <com.getbase.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/action_e"
+                        android:layout_width="wrap_content"
+                        fab:fab_icon="@drawable/layers"
+                        fab:fab_size="mini"
+                        android:layout_height="wrap_content"
+                        fab:fab_colorNormal="@color/white_fab"
+                        fab:fab_title="All Layers"
+                        fab:fab_colorPressed="@color/white_pressed"/>
+
+                </com.getbase.floatingactionbutton.FloatingActionsMenu>
+            </FrameLayout>
+
+
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="5dp"
-                android:background="@drawable/toolbar_dropshadow_upside"/>
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:visibility="gone"
+                    android:id="@+id/main_layout_up"
+                    android:layout_width="match_parent"
+                    android:layout_height="45dp"
+                    android:orientation="vertical">
+                    <View
+                        android:layout_gravity="bottom"
+                        android:id="@+id/toolbar_shadow2"
+                        android:layout_width="match_parent"
+                        android:layout_height="5dp"
+                        android:background="@drawable/toolbar_dropshadow_upside"/>
+                    <FrameLayout
+                        android:background="#def1fe"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <LinearLayout
+                            android:background="#def1fe"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"/>
+                        <android.support.v7.widget.RecyclerView
+                            android:id="@+id/main_recycler_up"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"/>
+                    </FrameLayout>
+
+                </LinearLayout>
+                <View
+                    android:layout_gravity="bottom"
+                    android:id="@+id/toolbar_shadow"
+                    android:layout_width="match_parent"
+                    android:layout_height="5dp"
+                    android:background="@drawable/toolbar_dropshadow_upside"/>
+            </FrameLayout>
+
             <LinearLayout
                 android:background="#fcfcfc"
                 android:layout_width="match_parent"
@@ -62,6 +176,7 @@
                     android:layout_gravity="center_vertical"
                     android:background="#d2d2d2"/>
                 <ImageButton
+                    android:id="@+id/main_contact_button"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:src="@drawable/ic_phone_24dp"

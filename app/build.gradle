@@ -25,6 +25,12 @@ dependencies {
     compile('com.mapbox.mapboxsdk:mapbox-android-sdk:5.0.0@aar') {
         transitive = true
     }
+    compile('com.mikepenz:fastadapter:2.1.7@aar') {
+        transitive = true
+    }
+    compile('com.github.afollestad.material-dialogs:core:0.8.5.4@aar') {
+        transitive = true
+    }
     compile 'com.android.support:appcompat-v7:25.2.0'
     compile 'com.android.support:recyclerview-v7:25.2.0'
     compile 'com.android.support:design:25.2.0'
@@ -35,4 +41,9 @@ dependencies {
     compile 'com.google.android.gms:play-services-places:10.2.0'
     compile 'com.google.maps.android:android-maps-utils:0.5'
     compile 'com.google.android.gms:play-services-base:10.2.0'
+    compile 'com.mikepenz:fastadapter-commons:2.1.0@aar'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.getbase:floatingactionbutton:1.10.1'
+    compile 'com.github.greenfrvr:rubber-loader:1.1.2@aar'
+    compile 'com.github.jksiezni.permissive:permissive:0.1'
 }

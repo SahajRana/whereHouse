@@ -1,0 +1,44 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+            android:background="@color/white_fab"
+             android:layout_height="match_parent"
+              android:orientation="vertical"
+             tools:context="com.tekraiders.wherehouse.wherehouse.OpenContactFragment">
+    <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+                                       android:visibility="visible"
+
+                                       android:id="@+id/contact_frag_toolbar"
+                                       android:layout_width="match_parent"
+                                       android:layout_height="wrap_content"
+                                       xmlns:app="http://schemas.android.com/apk/res-auto"
+                                       android:background="@color/colorPrimary"
+                                       app:theme="@style/MyCustomThemeToolbar"
+                                       app:popupTheme="@style/MyCustomOverlay">
+        <ImageButton
+            android:id="@+id/contact_frag_back"
+            android:src="@drawable/ic_arrow_back_24dp"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"/>
+        <TextView
+            android:textSize="20dp"
+            android:layout_marginStart="20dp"
+            android:textColor="@color/white"
+            android:id="@+id/contact_frag_toolbarText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </android.support.v7.widget.Toolbar>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_margin="10dp"
+            android:id="@+id/contact_frag_text"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/hello_blank_fragment"/>
+    </ScrollView>
+
+
+</LinearLayout>

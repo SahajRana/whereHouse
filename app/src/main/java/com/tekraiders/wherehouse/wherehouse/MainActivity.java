@@ -1,5 +1,8 @@
 package com.tekraiders.wherehouse.wherehouse;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -8,9 +11,11 @@ import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.graphics.drawable.shapes.Shape;
 import android.location.Location;
+import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
@@ -19,6 +24,9 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -28,8 +36,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -69,7 +80,12 @@ import com.google.maps.android.data.geojson.GeoJsonMultiPolygon;
 import com.google.maps.android.data.geojson.GeoJsonPoint;
 import com.google.maps.android.data.geojson.GeoJsonPolygon;
 import com.google.maps.android.data.geojson.GeoJsonPolygonStyle;
+import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.IAdapter;
+import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
+import com.mikepenz.fastadapter.helpers.ClickListenerHelper;
 import com.tekraiders.wherehouse.wherehouse.drawer.NavigationDrawerFragment;
+import com.tekraiders.wherehouse.wherehouse.tabs.MainUpRecyclerItemAdapter;
 import com.tekraiders.wherehouse.wherehouse.tabs.SlidingTabsLayout;
 
 import org.json.JSONException;
@@ -84,6 +100,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         LocationListener,GoogleMap.OnPolygonClickListener, GoogleMap.OnMapClickListener{
     private static final int CONNECTION_FAILURE_RESOLUTION_REQUEST = 2;
     private static final String TAG = "SahajLOG";
+    private static final int MARKER_SET_ZOOM = 6;
+    private boolean isMyLocCalled=false;
+    private static final int MARKER_REMOVE_ZOOM = 6;
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
@@ -104,24 +123,97 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Location location;
     private SupportMapFragment mapFragment;
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 3;
-    private GeoJsonLayer layer,layerA,layerB,layerC,layerD,layerE,layer2,layer3,layer4,layerE1,layerE2,layerE3,layerE4,layerE5,layerE6,layerE7,layerE8,layerE9,layerE10,layerE11,layerE12,layerE13,layerE14,layerE15;
-    private ArrayList<LatLngBounds> latLngBoundsArray,latLngBoundsArrayA,latLngBoundsArrayB,latLngBoundsArrayC,latLngBoundsArrayD,latLngBoundsArrayE,latLngBoundsArray2,latLngBoundsArray3,latLngBoundsArray4,latLngBoundsArrayE1,latLngBoundsArrayE2,latLngBoundsArrayE3,latLngBoundsArrayE4,latLngBoundsArrayE5,latLngBoundsArrayE6,latLngBoundsArrayE7,latLngBoundsArrayE8,latLngBoundsArrayE9,latLngBoundsArrayE10,latLngBoundsArrayE11,latLngBoundsArrayE12,latLngBoundsArrayE13,latLngBoundsArrayE14,latLngBoundsArrayE15;
+    private GeoJsonLayer layer,layerA,layerB,layerC,layerD,layerE,layer2,layer3,layer4,layerE1,layerE2,layerE3,layerE4,layerE5,layerE6,layerE7,layerE8,layerE9,layerE10,layerE11,layerE12,layerE13,layerE14,layerE15,layerE16,layerE17,layerE18,layerE19,layerE20,layerE21,layerE22,layerE23,layerE24,layerE25,layerE26,layerE27,layerE28,layerF1,layerF2,layerF3,layerF4,layerF5,layerF6,layerF7,layerF8,layerF9,layerF10,layerF11,layerF12,layerF13,layerF14,layerF15,layerF16,layerF17,layerF18,layerF19,layerF20,layerF21,layerF22,layerF23,layerF24,layerF25,layerF26,layerF27,layerF28,layerL1,layerL2,layerL3,layerL4,layerL5,layerL6,layerL7,layerL8,layerL9,layerL10,layerL11,layerL12,layerL13,layerL14,layerL15,layerL16,layerL17,layerL18,layerL19,layerL20;
+    private ArrayList<LatLngBounds> latLngBoundsArray,latLngBoundsArrayA,latLngBoundsArrayB,latLngBoundsArrayC,latLngBoundsArrayD,latLngBoundsArrayE,latLngBoundsArray2,latLngBoundsArray3,latLngBoundsArray4,latLngBoundsArrayE1,latLngBoundsArrayE2,latLngBoundsArrayE3,latLngBoundsArrayE4,latLngBoundsArrayE5,latLngBoundsArrayE6,latLngBoundsArrayE7,latLngBoundsArrayE8,latLngBoundsArrayE9,latLngBoundsArrayE10,latLngBoundsArrayE11,latLngBoundsArrayE12,latLngBoundsArrayE13,latLngBoundsArrayE14,latLngBoundsArrayE15,latLngBoundsArrayE16,latLngBoundsArrayE17,latLngBoundsArrayE18,latLngBoundsArrayE19,latLngBoundsArrayE20,latLngBoundsArrayE21,latLngBoundsArrayE22,latLngBoundsArrayE23,latLngBoundsArrayE24,latLngBoundsArrayE25,latLngBoundsArrayE26,latLngBoundsArrayE27,latLngBoundsArrayE28,latLngBoundsArrayF1,latLngBoundsArrayF2,latLngBoundsArrayF3,latLngBoundsArrayF4,latLngBoundsArrayF5,latLngBoundsArrayF6,latLngBoundsArrayF7,latLngBoundsArrayF8,latLngBoundsArrayF9,latLngBoundsArrayF10,latLngBoundsArrayF11,latLngBoundsArrayF12,latLngBoundsArrayF13,latLngBoundsArrayF14,latLngBoundsArrayF15,latLngBoundsArrayF16,latLngBoundsArrayF17,latLngBoundsArrayF18,latLngBoundsArrayF19,latLngBoundsArrayF20,latLngBoundsArrayF21,latLngBoundsArrayF22,latLngBoundsArrayF23,latLngBoundsArrayF24,latLngBoundsArrayF25,latLngBoundsArrayF26,latLngBoundsArrayF27,latLngBoundsArrayF28,latLngBoundsArrayL1,latLngBoundsArrayL2,latLngBoundsArrayL3,latLngBoundsArrayL4,latLngBoundsArrayL5,latLngBoundsArrayL6,latLngBoundsArrayL7,latLngBoundsArrayL8,latLngBoundsArrayL9,latLngBoundsArrayL10,latLngBoundsArrayL11,latLngBoundsArrayL12,latLngBoundsArrayL13,latLngBoundsArrayL14,latLngBoundsArrayL15,latLngBoundsArrayL16,latLngBoundsArrayL17,latLngBoundsArrayL18,latLngBoundsArrayL19,latLngBoundsArrayL20;
 
+    private RecyclerView mRecyclerView;
+    private FastItemAdapter<MainUpRecyclerItemAdapter> mFastItemAdapter;
+    private ClickListenerHelper<MainUpRecyclerItemAdapter> mClickListenerHelper;
+    private LinearLayoutManager mLayoutManager;
+    private LinearLayout mLinearLayoutUp;
+    private ImageButton mImageButtonContact;
+
+    //initial zoom
+    static final int initZoom = 8;
+    //steps the zoom
+    int stepZoom = 0;
+    // number of steps in zoom, be careful with this number!
+    int stepZoomMax = 1;
+    //number of .zoom steps in a step
+    int stepZoomDetent =1;// (18 - initZoom) / stepZoomMax;
+    //when topause zoom for spin
+    int stepToSpin = 1;
+    //steps the spin
+    int stepSpin = 0;
+    //number of steps in spin (factor of 360)
+    int stepSpinMax = 1;
+    //number of degrees in stepSpin
+    int stepSpinDetent = 360 / stepSpinMax;
+
+    Intent detailIntent;
+    Intent intent;
+    Marker marker;
+    final int mapHopDelay = 2000;
+    private LatLng latLngX=null;
+
+
+    private SharedPreferences prefs;
+    private FloatingActionButton mFabBack;
+    private com.getbase.floatingactionbutton.FloatingActionButton mFabEq,mFabCy,mFabFl,mFabLs,mFabAL;
+    private FloatingActionsMenu mFabMulti;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         Toolbar mToolbar=(Toolbar)findViewById(R.id.main_toolbar);
         setSupportActionBar(mToolbar);
         setTitle("");
         if (getSupportActionBar() != null){
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+        mFabBack=(FloatingActionButton)findViewById(R.id.main_fab_back);
+        mFabMulti=(FloatingActionsMenu)findViewById(R.id.main_fab_multi);
+        mImageButtonContact=(ImageButton)findViewById(R.id.main_contact_button);
+        mFabBack.setVisibility(View.GONE);
+        mFabMulti.setVisibility(View.VISIBLE);
+        mFabCy=(com.getbase.floatingactionbutton.FloatingActionButton)findViewById(R.id.action_a);
+        mFabEq=(com.getbase.floatingactionbutton.FloatingActionButton)findViewById(R.id.action_b);
+        mFabFl=(com.getbase.floatingactionbutton.FloatingActionButton)findViewById(R.id.action_c);
+        mFabLs=(com.getbase.floatingactionbutton.FloatingActionButton)findViewById(R.id.action_d);
+        mFabAL=(com.getbase.floatingactionbutton.FloatingActionButton)findViewById(R.id.action_e);
+
+
 
         NavigationDrawerFragment drawerFragment=(NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.nav_frag);
         drawerFragment.setUp(R.id.nav_frag, (DrawerLayout) findViewById(R.id.drawerLayout), mToolbar);
+
+        mLinearLayoutUp=(LinearLayout)findViewById(R.id.main_layout_up);
+        mFastItemAdapter = new FastItemAdapter<>();
+        mFastItemAdapter.withSavedInstanceState(savedInstanceState);
+        mRecyclerView=(RecyclerView)findViewById(R.id.main_recycler_up);
+        mClickListenerHelper = new ClickListenerHelper<>(mFastItemAdapter);
+        mFastItemAdapter.withOnClickListener(new FastAdapter.OnClickListener<MainUpRecyclerItemAdapter>() {
+            @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+            @Override
+            public boolean onClick(View v, IAdapter<MainUpRecyclerItemAdapter> adapter,MainUpRecyclerItemAdapter item, int position) {
+               /* Intent myIntent = new Intent(getActivity(), ProfileNewActivity.class);
+                myIntent.putExtra("EmailPrefGeneral", item.getEmailPrefsGeneral());
+                startActivity(myIntent);*/
+                return false;
+            }
+        });
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        // if (mLayoutManager==null){
+        Log.e("SahajLOG11", "mLayautNull Called");
+        mLayoutManager = new LinearLayoutManager(this);
+        mLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.setAdapter(mFastItemAdapter);
+        mLinearLayoutUp.setVisibility(View.GONE);
 
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -142,9 +234,266 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(10 * 1000)        // 10 seconds, in milliseconds
                 .setFastestInterval(1 * 1000); // 1 second, in milliseconds
+        mFabBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (hashMapMarker != null)
+                    if (hashMapMarker.get("otherLocMark") != null)
+                        removeUpMaker("otherLocMark");
+                removeAllLayers();
+                if (mLinearLayoutUp.getVisibility()==View.VISIBLE){
+                 //   mLinearLayoutUp.setAlpha(1.0f);
+                    Log.e("SahajLOG", "height***********2 "+mLinearLayoutUp.getHeight());
+                    mLinearLayoutUp.setTranslationY(0);
+                    mLinearLayoutUp.animate()
+                            .setDuration(400)
+                            .translationY(mLinearLayoutUp.getHeight())
+                          //  .alpha(0.0f)
+                            .setListener(new AnimatorListenerAdapter() {
+                                @Override
+                                public void onAnimationEnd(Animator animation) {
+                                    super.onAnimationEnd(animation);
+                                    mLinearLayoutUp.setVisibility(View.GONE);
+                                    mFabBack.setVisibility(View.GONE);
+                                    mFabMulti.setVisibility(View.VISIBLE);
+                                }
+                            });
+                }
+
+            }
+        });
+        mFabCy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (hashMapMarker != null)
+                    if (hashMapMarker.get("otherLocMark") != null)
+                        removeUpMaker("otherLocMark");
+                removeAllLayers();
+                layer.addLayerToMap();
+                layerA.addLayerToMap();
+                layerB.addLayerToMap();
+                layerC.addLayerToMap();
+                layerD.addLayerToMap();
+                layerE.addLayerToMap();
+                layer2.addLayerToMap();
+                layer3.addLayerToMap();
+                layer4.addLayerToMap();
+            }
+        });
+        mFabEq.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (hashMapMarker != null)
+                    if (hashMapMarker.get("otherLocMark") != null)
+                        removeUpMaker("otherLocMark");
+                removeAllLayers();
+                layerE1.addLayerToMap();
+                layerE2.addLayerToMap();
+                layerE3.addLayerToMap();
+                layerE4.addLayerToMap();
+                layerE5.addLayerToMap();
+                layerE6.addLayerToMap();
+                layerE7.addLayerToMap();
+                layerE8.addLayerToMap();
+                layerE9.addLayerToMap();
+                layerE10.addLayerToMap();
+                layerE11.addLayerToMap();
+                layerE12.addLayerToMap();
+                layerE13.addLayerToMap();
+                layerE14.addLayerToMap();
+                layerE15.addLayerToMap();
+                layerE16.addLayerToMap();
+                layerE17.addLayerToMap();
+                layerE18.addLayerToMap();
+                layerE19.addLayerToMap();
+                layerE20.addLayerToMap();
+                layerE21.addLayerToMap();
+                layerE22.addLayerToMap();
+                layerE23.addLayerToMap();
+                layerE24.addLayerToMap();
+                layerE25.addLayerToMap();
+                layerE26.addLayerToMap();
+                layerE27.addLayerToMap();
+                layerE28.addLayerToMap();
+            }
+        });
+        mFabFl.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (hashMapMarker != null)
+                    if (hashMapMarker.get("otherLocMark") != null)
+                        removeUpMaker("otherLocMark");
+                removeAllLayers();
+                layerF1.addLayerToMap();
+                layerF2.addLayerToMap();
+                layerF3.addLayerToMap();
+                layerF4.addLayerToMap();
+                layerF5.addLayerToMap();
+                layerF6.addLayerToMap();
+                layerF7.addLayerToMap();
+                layerF8.addLayerToMap();
+                layerF9.addLayerToMap();
+                layerF10.addLayerToMap();
+                layerF11.addLayerToMap();
+                layerF12.addLayerToMap();
+                layerF13.addLayerToMap();
+                layerF14.addLayerToMap();
+                layerF15.addLayerToMap();
+                layerF16.addLayerToMap();
+                layerF17.addLayerToMap();
+                layerF18.addLayerToMap();
+                layerF19.addLayerToMap();
+                layerF20.addLayerToMap();
+                layerF21.addLayerToMap();
+                layerF22.addLayerToMap();
+                layerF23.addLayerToMap();
+                layerF24.addLayerToMap();
+                layerF25.addLayerToMap();
+                layerF26.addLayerToMap();
+                layerF27.addLayerToMap();
+                layerF28.addLayerToMap();
 
 
+            }
+        });
+        mFabLs.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (hashMapMarker != null)
+                    if (hashMapMarker.get("otherLocMark") != null)
+                        removeUpMaker("otherLocMark");
+                removeAllLayers();
+                layerL1.addLayerToMap();
+                layerL2.addLayerToMap();
+                layerL3.addLayerToMap();
+                layerL4.addLayerToMap();
+                layerL5.addLayerToMap();
+                layerL6.addLayerToMap();
+                layerL7.addLayerToMap();
+                layerL8.addLayerToMap();
+                layerL9.addLayerToMap();
+                layerL10.addLayerToMap();
+                layerL11.addLayerToMap();
+                layerL12.addLayerToMap();
+                layerL13.addLayerToMap();
+                layerL14.addLayerToMap();
+                layerL15.addLayerToMap();
+                layerL16.addLayerToMap();
+                layerL17.addLayerToMap();
+                layerL18.addLayerToMap();
+                layerL19.addLayerToMap();
+                layerL20.addLayerToMap();
+            }
+        });
+        mFabAL.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (hashMapMarker != null)
+                    if (hashMapMarker.get("otherLocMark") != null)
+                        removeUpMaker("otherLocMark");
+                removeAllLayers();
+                layer.addLayerToMap();
+                layerA.addLayerToMap();
+                layerB.addLayerToMap();
+                layerC.addLayerToMap();
+                layerD.addLayerToMap();
+                layerE.addLayerToMap();
+                layer2.addLayerToMap();
+                layer3.addLayerToMap();
+                layer4.addLayerToMap();
 
+                layerE1.addLayerToMap();
+                layerE2.addLayerToMap();
+                layerE3.addLayerToMap();
+                layerE4.addLayerToMap();
+                layerE5.addLayerToMap();
+                layerE6.addLayerToMap();
+                layerE7.addLayerToMap();
+                layerE8.addLayerToMap();
+                layerE9.addLayerToMap();
+                layerE10.addLayerToMap();
+                layerE11.addLayerToMap();
+                layerE12.addLayerToMap();
+                layerE13.addLayerToMap();
+                layerE14.addLayerToMap();
+                layerE15.addLayerToMap();
+                layerE16.addLayerToMap();
+                layerE17.addLayerToMap();
+                layerE18.addLayerToMap();
+                layerE19.addLayerToMap();
+                layerE20.addLayerToMap();
+                layerE21.addLayerToMap();
+                layerE22.addLayerToMap();
+                layerE23.addLayerToMap();
+                layerE24.addLayerToMap();
+                layerE25.addLayerToMap();
+                layerE26.addLayerToMap();
+                layerE27.addLayerToMap();
+                layerE28.addLayerToMap();
+
+                layerF1.addLayerToMap();
+                layerF2.addLayerToMap();
+                layerF3.addLayerToMap();
+                layerF4.addLayerToMap();
+                layerF5.addLayerToMap();
+                layerF6.addLayerToMap();
+                layerF7.addLayerToMap();
+                layerF8.addLayerToMap();
+                layerF9.addLayerToMap();
+                layerF10.addLayerToMap();
+                layerF11.addLayerToMap();
+                layerF12.addLayerToMap();
+                layerF13.addLayerToMap();
+                layerF14.addLayerToMap();
+                layerF15.addLayerToMap();
+                layerF16.addLayerToMap();
+                layerF17.addLayerToMap();
+                layerF18.addLayerToMap();
+                layerF19.addLayerToMap();
+                layerF20.addLayerToMap();
+                layerF21.addLayerToMap();
+                layerF22.addLayerToMap();
+                layerF23.addLayerToMap();
+                layerF24.addLayerToMap();
+                layerF25.addLayerToMap();
+                layerF26.addLayerToMap();
+                layerF27.addLayerToMap();
+                layerF28.addLayerToMap();
+
+                layerL1.addLayerToMap();
+                layerL2.addLayerToMap();
+                layerL3.addLayerToMap();
+                layerL4.addLayerToMap();
+                layerL5.addLayerToMap();
+                layerL6.addLayerToMap();
+                layerL7.addLayerToMap();
+                layerL8.addLayerToMap();
+                layerL9.addLayerToMap();
+                layerL10.addLayerToMap();
+                layerL11.addLayerToMap();
+                layerL12.addLayerToMap();
+                layerL13.addLayerToMap();
+                layerL14.addLayerToMap();
+                layerL15.addLayerToMap();
+                layerL16.addLayerToMap();
+                layerL17.addLayerToMap();
+                layerL18.addLayerToMap();
+                layerL19.addLayerToMap();
+                layerL20.addLayerToMap();
+            }
+        });
+        mImageButtonContact.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent=new Intent(MainActivity.this,ContactActivity.class);
+                startActivity(intent);
+                enterFromBottomAnimation();
+            }
+        });
+
+    }
+    protected void enterFromBottomAnimation(){
+        overridePendingTransition(R.anim.activity_open_translate_from_bottom, R.anim.activity_no_animation);
     }
 
     @Override
@@ -219,68 +568,101 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.i(TAG, "Place: " + place.getName());
                 LatLng latLng = place.getLatLng();
                 try {
-                    int i = 0;
-
-                    //Log.e("SahajLOG", " latlang > " + latLng + " " + layer.getBoundingBox().contains(latLng) + " " + layer.getBoundingBox().including(latLng));
                     String MarkerString = "location marked";
+                    mFastItemAdapter.clear();
+                    prefs.edit().putBoolean("CycloneCalled",false).commit();
+                    prefs.edit().putBoolean("EarthquakeCalled",false).commit();
+                    prefs.edit().putBoolean("FloodCalled",false).commit();
+                    prefs.edit().putBoolean("LandslideCalled",false).commit();
 
-                    makeLayerWork(layerA, latLng, latLngBoundsArrayA);
-                    makeLayerWork(layerB, latLng, latLngBoundsArrayB);
-                    makeLayerWork(layerC, latLng, latLngBoundsArrayC);
-                    makeLayerWork(layerD, latLng, latLngBoundsArrayD);
-                    makeLayerWork(layerE, latLng, latLngBoundsArrayE);
+                    makeLayerWork(layer , latLng, latLngBoundsArray,"Cyclone");
+                    makeLayerWork(layerA, latLng, latLngBoundsArrayA,"Cyclone");
+                    makeLayerWork(layerB, latLng, latLngBoundsArrayB,"Cyclone");
+                    makeLayerWork(layerC, latLng, latLngBoundsArrayC,"Cyclone");
+                    makeLayerWork(layerD, latLng, latLngBoundsArrayD,"Cyclone");
+                    makeLayerWork(layerE, latLng, latLngBoundsArrayE,"Cyclone");
+                    makeLayerWork(layer2, latLng, latLngBoundsArray2,"Cyclone");
+                    makeLayerWork(layer3, latLng, latLngBoundsArray3,"Cyclone");
+                    makeLayerWork(layer4, latLng, latLngBoundsArray4,"Cyclone");
 
+                    makeLayerWork(layerE1 , latLng, latLngBoundsArrayE1,"Earthquake");
+                    makeLayerWork(layerE2 , latLng, latLngBoundsArrayE2,"Earthquake");
+                    makeLayerWork(layerE3 , latLng, latLngBoundsArrayE3,"Earthquake");
+                    makeLayerWork(layerE4 , latLng, latLngBoundsArrayE4,"Earthquake");
+                    makeLayerWork(layerE5 , latLng, latLngBoundsArrayE5,"Earthquake");
+                    makeLayerWork(layerE6 , latLng, latLngBoundsArrayE6,"Earthquake");
+                    makeLayerWork(layerE7 , latLng, latLngBoundsArrayE7,"Earthquake");
+                    makeLayerWork(layerE8 , latLng, latLngBoundsArrayE8,"Earthquake");
+                    makeLayerWork(layerE9 , latLng, latLngBoundsArrayE9,"Earthquake");
+                    makeLayerWork(layerE10 , latLng, latLngBoundsArrayE10,"Earthquake");
+                    makeLayerWork(layerE11 , latLng, latLngBoundsArrayE11,"Earthquake");
+                    makeLayerWork(layerE12 , latLng, latLngBoundsArrayE12,"Earthquake");
+                    makeLayerWork(layerE13 , latLng, latLngBoundsArrayE13,"Earthquake");
+                    makeLayerWork(layerE14 , latLng, latLngBoundsArrayE14,"Earthquake");
+                    makeLayerWork(layerE15 , latLng, latLngBoundsArrayE15,"Earthquake");
+                    makeLayerWork(layerE16 , latLng, latLngBoundsArrayE16,"Earthquake");
+                    makeLayerWork(layerE17 , latLng, latLngBoundsArrayE17,"Earthquake");
+                    makeLayerWork(layerE18 , latLng, latLngBoundsArrayE18,"Earthquake");
+                    makeLayerWork(layerE19 , latLng, latLngBoundsArrayE19,"Earthquake");
+                    makeLayerWork(layerE20 , latLng, latLngBoundsArrayE20,"Earthquake");
+                    makeLayerWork(layerE21 , latLng, latLngBoundsArrayE21,"Earthquake");
+                    makeLayerWork(layerE22 , latLng, latLngBoundsArrayE22,"Earthquake");
+                    makeLayerWork(layerE23 , latLng, latLngBoundsArrayE23,"Earthquake");
+                    makeLayerWork(layerE24 , latLng, latLngBoundsArrayE24,"Earthquake");
+                    makeLayerWork(layerE25 , latLng, latLngBoundsArrayE25,"Earthquake");
+                    makeLayerWork(layerE26 , latLng, latLngBoundsArrayE26,"Earthquake");
+                    makeLayerWork(layerE27 , latLng, latLngBoundsArrayE27,"Earthquake");
+                    makeLayerWork(layerE28 , latLng, latLngBoundsArrayE28,"Earthquake");
 
-                    i = 0;
-                    for (LatLngBounds bbc : latLngBoundsArray) {
-                        Log.e("SahajLOG", "callad A1" + bbc.contains(latLng));
-                        if (bbc.contains(latLng)) {
-                            i++;
-                            layer.addLayerToMap();
-                            MarkerString = "Cyclone ZONE 1";
-                        } else if (layer.isLayerOnMap() && i == 0) {
-                            layer.removeLayerFromMap();
-                        }
-                    }
+                    makeLayerWork(layerF1 , latLng, latLngBoundsArrayF1,"Flood");
+                    makeLayerWork(layerF2 , latLng, latLngBoundsArrayF2,"Flood");
+                    makeLayerWork(layerF3 , latLng, latLngBoundsArrayF3,"Flood");
+                    makeLayerWork(layerF4 , latLng, latLngBoundsArrayF4,"Flood");
+                    makeLayerWork(layerF5 , latLng, latLngBoundsArrayF5,"Flood");
+                    makeLayerWork(layerF6 , latLng, latLngBoundsArrayF6,"Flood");
+                    makeLayerWork(layerF7 , latLng, latLngBoundsArrayF7,"Flood");
+                    makeLayerWork(layerF8 , latLng, latLngBoundsArrayF8,"Flood");
+                    makeLayerWork(layerF9 , latLng, latLngBoundsArrayF9,"Flood");
+                    makeLayerWork(layerF10 , latLng, latLngBoundsArrayF10,"Flood");
+                    makeLayerWork(layerF11 , latLng, latLngBoundsArrayF11,"Flood");
+                    makeLayerWork(layerF12 , latLng, latLngBoundsArrayF12,"Flood");
+                    makeLayerWork(layerF13 , latLng, latLngBoundsArrayF13,"Flood");
+                    makeLayerWork(layerF14 , latLng, latLngBoundsArrayF14,"Flood");
+                    makeLayerWork(layerF15 , latLng, latLngBoundsArrayF15,"Flood");
+                    makeLayerWork(layerF16 , latLng, latLngBoundsArrayF16,"Flood");
+                    makeLayerWork(layerF17 , latLng, latLngBoundsArrayF17,"Flood");
+                    makeLayerWork(layerF18 , latLng, latLngBoundsArrayF18,"Flood");
+                    makeLayerWork(layerF19 , latLng, latLngBoundsArrayF19,"Flood");
+                    makeLayerWork(layerF20 , latLng, latLngBoundsArrayF20,"Flood");
+                    makeLayerWork(layerF21 , latLng, latLngBoundsArrayF21,"Flood");
+                    makeLayerWork(layerF22 , latLng, latLngBoundsArrayF22,"Flood");
+                    makeLayerWork(layerF23 , latLng, latLngBoundsArrayF23,"Flood");
+                    makeLayerWork(layerF24 , latLng, latLngBoundsArrayF24,"Flood");
+                    makeLayerWork(layerF25 , latLng, latLngBoundsArrayF25,"Flood");
+                    makeLayerWork(layerF26 , latLng, latLngBoundsArrayF26,"Flood");
+                    makeLayerWork(layerF27 , latLng, latLngBoundsArrayF27,"Flood");
+                    makeLayerWork(layerF28 , latLng, latLngBoundsArrayF28,"Flood");
 
-
-                    i = 0;
-                    for (LatLngBounds bbc : latLngBoundsArray2) {
-                        Log.e("SahajLOG", "callad A2" + bbc.contains(latLng));
-                        if (bbc.contains(latLng)) {
-                            i++;
-                            layer2.addLayerToMap();
-                            MarkerString = "Cyclone ZONE 2";
-                        } else if (layer2.isLayerOnMap() && i == 0) {
-                            layer2.removeLayerFromMap();
-                        }
-                    }
-
-
-                    i = 0;
-                    for (LatLngBounds bbc : latLngBoundsArray3) {
-                        Log.e("SahajLOG", "callad A3" + bbc.contains(latLng));
-                        if (bbc.contains(latLng)) {
-                            i++;
-                            layer3.addLayerToMap();
-                            MarkerString = "Cyclone ZONE 3";
-                        } else if (layer3.isLayerOnMap() && i == 0) {
-                            layer3.removeLayerFromMap();
-                        }
-                    }
-
-
-                    i = 0;
-                    for (LatLngBounds bbc : latLngBoundsArray4) {
-                        Log.e("SahajLOG", "callad A4" + bbc.contains(latLng));
-                        if (bbc.contains(latLng)) {
-                            i++;
-                            layer4.addLayerToMap();
-                            MarkerString = "Cyclone ZONE 4";
-                        } else if (layer4.isLayerOnMap() && i == 0) {
-                            layer4.removeLayerFromMap();
-                        }
-                    }
+                    makeLayerWork(layerL1 , latLng, latLngBoundsArrayL1,"Landslide");
+                    makeLayerWork(layerL2 , latLng, latLngBoundsArrayL2,"Landslide");
+                    makeLayerWork(layerL3 , latLng, latLngBoundsArrayL3,"Landslide");
+                    makeLayerWork(layerL4 , latLng, latLngBoundsArrayL4,"Landslide");
+                    makeLayerWork(layerL5 , latLng, latLngBoundsArrayL5,"Landslide");
+                    makeLayerWork(layerL6 , latLng, latLngBoundsArrayL6,"Landslide");
+                    makeLayerWork(layerL7 , latLng, latLngBoundsArrayL7,"Landslide");
+                    makeLayerWork(layerL8 , latLng, latLngBoundsArrayL8,"Landslide");
+                    makeLayerWork(layerL9 , latLng, latLngBoundsArrayL9,"Landslide");
+                    makeLayerWork(layerL10 , latLng, latLngBoundsArrayL10,"Landslide");
+                    makeLayerWork(layerL11 , latLng, latLngBoundsArrayL11,"Landslide");
+                    makeLayerWork(layerL12 , latLng, latLngBoundsArrayL12,"Landslide");
+                    makeLayerWork(layerL13 , latLng, latLngBoundsArrayL13,"Landslide");
+                    makeLayerWork(layerL14 , latLng, latLngBoundsArrayL14,"Landslide");
+                    makeLayerWork(layerL15 , latLng, latLngBoundsArrayL15,"Landslide");
+                    makeLayerWork(layerL16 , latLng, latLngBoundsArrayL16,"Landslide");
+                    makeLayerWork(layerL17 , latLng, latLngBoundsArrayL17,"Landslide");
+                    makeLayerWork(layerL18 , latLng, latLngBoundsArrayL18,"Landslide");
+                    makeLayerWork(layerL19 , latLng, latLngBoundsArrayL19,"Landslide");
+                    makeLayerWork(layerL20 , latLng, latLngBoundsArrayL20,"Landslide");
 
                     if (hashMapMarker != null) {
                         if (hashMapMarker.get("otherLocMark") != null) {
@@ -313,6 +695,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Marker marker = mMap.addMarker(new MarkerOptions().position(new LatLng(currentLatitude, currentLongitude)).title(title));
         hashMapMarker.put(Key, marker);
         marker.showInfoWindow();
+        LatLng latLng=new LatLng(currentLatitude,currentLongitude);
+        latLngX=latLng;
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLatitude, currentLongitude), MARKER_SET_ZOOM));
+        /*mMap.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.builder()
+                        .target(latLngX)
+                        .zoom(initZoom - 1)
+                        .build())
+                , mapHopDelay
+                , cameraAnimation
+        );*/
       //  Log.e("SahajLOG", "setUpMarker > " +marker +" key "+Key);
         //mMap.addMarker(new MarkerOptions().position(new LatLng(currentLatitude, currentLongitude)).title("I am here!"));
     }
@@ -323,6 +715,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 marker.remove();
             hashMapMarker.remove(Key);
             Log.e("SahajLOG", "removeMarker > " + marker + " key " + Key);
+            //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLatitude, currentLongitude), MARKER_SET_ZOOM));
         }
     }
 
@@ -354,28 +747,30 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (mCameraPosition != null) {
             mMap.moveCamera(CameraUpdateFactory.newCameraPosition(mCameraPosition));
         } else if (mLastKnownLocation != null) {
-
-            if (hashMapMarker!=null) {
-                if (hashMapMarker.get("MyLocation") != null) {
-                    removeUpMaker("MyLocation");
-                    setUpMaker(mLastKnownLocation.getLatitude(),
-                            mLastKnownLocation.getLongitude(), "MyLocation", "I am here!");
+            if (!isMyLocCalled) {
+                if (hashMapMarker != null) {
+                    if (hashMapMarker.get("MyLocation") != null) {
+                        removeUpMaker("MyLocation");
+                        setUpMaker(mLastKnownLocation.getLatitude(),
+                                mLastKnownLocation.getLongitude(), "MyLocation", "I am here!");
+                    } else
+                        setUpMaker(mLastKnownLocation.getLatitude(),
+                                mLastKnownLocation.getLongitude(), "MyLocation", "I am here!");
                 } else
                     setUpMaker(mLastKnownLocation.getLatitude(),
                             mLastKnownLocation.getLongitude(), "MyLocation", "I am here!");
-            }else
-                setUpMaker(mLastKnownLocation.getLatitude(),
-                        mLastKnownLocation.getLongitude(), "MyLocation", "I am here!");
 
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(mLastKnownLocation.getLatitude(),
-                            mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
-
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                        new LatLng(mLastKnownLocation.getLatitude(),
+                                mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                isMyLocCalled=true;
+            }
         } else {
             Log.e("SahajLOG", "Current location is null. Using defaults.");
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
         }
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
     }
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -424,537 +819,261 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         Log.e("SahajLOG", "**ON MAP READY**");
         mMap = googleMap;
-        //MapFragment mapFrag = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-        // Add polylines and polygons to the map. This section shows just
-        // a single polyline. Read the rest of the tutorial to learn more.
-        Polyline polyline1 = googleMap.addPolyline(new PolylineOptions()
-                .clickable(true)
-                .add(
-                        new LatLng(-35.016, 143.321),
-                        new LatLng(-34.747, 145.592),
-                        new LatLng(-34.364, 147.891),
-                        new LatLng(-33.501, 150.217),
-                        new LatLng(-32.306, 149.248),
-                        new LatLng(-32.491, 147.309)));
 
-        // Position the map's camera near Alice Springs in the center of Australia,
-        // and set the zoom factor so most of Australia shows on the screen.
-
-        //--googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-23.684, 133.903), 4));
-
-        // Set listeners for click events.
-     //   googleMap.setOnPolylineClickListener(MainActivity.this);
         googleMap.setOnPolygonClickListener(MainActivity.this);
         googleMap.setOnMapClickListener(MainActivity.this);
 
         try {
-             layer = new GeoJsonLayer(mMap, R.raw.cyclone1_1,
-                    getApplicationContext());
-            layerA = new GeoJsonLayer(mMap, R.raw.cyclone1_2,
-                    getApplicationContext());
-            layerB = new GeoJsonLayer(mMap, R.raw.cyclone1_3,
-                    getApplicationContext());
-            layerC = new GeoJsonLayer(mMap, R.raw.cyclone1_4,
-                    getApplicationContext());
-            layerD = new GeoJsonLayer(mMap, R.raw.cyclone1_5,
-                    getApplicationContext());
-            layerE = new GeoJsonLayer(mMap, R.raw.cyclone1_6,
-                    getApplicationContext());
-             layer2 = new GeoJsonLayer(mMap, R.raw.cyclone2_1,
-                    getApplicationContext());
-             layer3 = new GeoJsonLayer(mMap, R.raw.cyclone2_2,
-                    getApplicationContext());
-             layer4 = new GeoJsonLayer(mMap, R.raw.cyclone2_3,
-                    getApplicationContext());
-           /* layerE1 = new GeoJsonLayer(mMap, R.raw.ert_1_1,
-                    getApplicationContext());
-            layerE2= new GeoJsonLayer(mMap, R.raw.ert_1_3,
-                    getApplicationContext());
-            layerE3= new GeoJsonLayer(mMap, R.raw.ert_1_4,
-                    getApplicationContext());
-            layerE4= new GeoJsonLayer(mMap, R.raw.ert_1_5,
-                    getApplicationContext());
-            layerE5= new GeoJsonLayer(mMap, R.raw.ert_1_6,
-                    getApplicationContext());
-            layerE6= new GeoJsonLayer(mMap, R.raw.ert_2_1,
-                    getApplicationContext());
-            layerE7 = new GeoJsonLayer(mMap, R.raw.ert_2_2,
-                    getApplicationContext());
-            layerE8 = new GeoJsonLayer(mMap, R.raw.ert_2_3,
-                    getApplicationContext());
-            layerE9 = new GeoJsonLayer(mMap, R.raw.ert_2_4,
-                    getApplicationContext());
-            layerE10 = new GeoJsonLayer(mMap, R.raw.ert_3_1,
-                    getApplicationContext());
-            layerE11 = new GeoJsonLayer(mMap, R.raw.ert_3_2,
-                    getApplicationContext());
-            layerE12 = new GeoJsonLayer(mMap, R.raw.ert_4_1,
-                    getApplicationContext());
-            layerE13 = new GeoJsonLayer(mMap, R.raw.ert_4_2,
-                    getApplicationContext());
-            layerE14 = new GeoJsonLayer(mMap, R.raw.ert_4_3,
-                    getApplicationContext());
-            layerE15 = new GeoJsonLayer(mMap, R.raw.ert_1_2,
-                    getApplicationContext());
-                    */
-            // layer.addLayerToMap();
-            GeoJsonPolygonStyle polygonStyle=layer.getDefaultPolygonStyle();
-            polygonStyle.setFillColor(0x32e74c3c);
-            polygonStyle.setStrokeWidth(1.5f);
-             latLngBoundsArray = new ArrayList<>();
-            latLngBoundsArray.addAll(getLatLngBoundingBox(layer));
+            layer= makeInitLayer(R.raw.cyclone1_1);
+            layerA=makeInitLayer(R.raw.cyclone1_2);
+            layerB=makeInitLayer(R.raw.cyclone1_3);
+            layerC=makeInitLayer(R.raw.cyclone1_4);
+            layerD=makeInitLayer(R.raw.cyclone1_5);
+            layerE=makeInitLayer(R.raw.cyclone1_6);
+            layer2=makeInitLayer(R.raw.cyclone2_1);
+            layer3=makeInitLayer(R.raw.cyclone2_2);
+            layer4=makeInitLayer(R.raw.cyclone2_3);
+            layerE1= makeInitLayer(R.raw.e_3_1);
+            layerE2= makeInitLayer(R.raw.e_3_2);
+            layerE3= makeInitLayer(R.raw.e_3_3);
+            layerE4= makeInitLayer(R.raw.e_3_4);
+            layerE5= makeInitLayer(R.raw.e_3_5);
+            layerE6= makeInitLayer(R.raw.e_3_6);
+            layerE7= makeInitLayer(R.raw.e_3_7);
+            layerE8= makeInitLayer(R.raw.e_3_8);
+            layerE9= makeInitLayer(R.raw.e_3_9);
+            layerE10= makeInitLayer(R.raw.e_3_10);
+            layerE11= makeInitLayer(R.raw.e_3_11);
+            layerE12= makeInitLayer(R.raw.e_3_12);
+            layerE13= makeInitLayer(R.raw.e_3_13);
+            layerE14= makeInitLayer(R.raw.e_3_14);
+            layerE15= makeInitLayer(R.raw.e_3_15);
+            layerE16= makeInitLayer(R.raw.e_4_1);
+            layerE17= makeInitLayer(R.raw.e_4_2);
+            layerE18= makeInitLayer(R.raw.e_4_3);
+            layerE19= makeInitLayer(R.raw.e_4_4);
+            layerE20= makeInitLayer(R.raw.e_4_5);
+            layerE21= makeInitLayer(R.raw.e_4_6);
+            layerE22= makeInitLayer(R.raw.e_4_7);
+            layerE23= makeInitLayer(R.raw.e_5_1);
+            layerE24= makeInitLayer(R.raw.e_5_2);
+            layerE25= makeInitLayer(R.raw.e_5_3);
+            layerE26= makeInitLayer(R.raw.e_5_4);
+            layerE27= makeInitLayer(R.raw.e_5_5);
+            layerE28= makeInitLayer(R.raw.e_5_6);
 
-            GeoJsonPolygonStyle polygonStyleA=layerA.getDefaultPolygonStyle();
-            polygonStyleA.setFillColor(0x32e74c3c);
-            polygonStyleA.setStrokeWidth(1.5f);
-            latLngBoundsArrayA = new ArrayList<>();
-            latLngBoundsArrayA.addAll(getLatLngBoundingBox(layerA));
+            layerF1= makeInitLayer(R.raw.f1_f2_f3_f4);
+            layerF2= makeInitLayer(R.raw.f5_1);
+            layerF3= makeInitLayer(R.raw.f5_2);
+            layerF4= makeInitLayer(R.raw.f5_3);
+            layerF5= makeInitLayer(R.raw.f6);
+            layerF6= makeInitLayer(R.raw.f7);
+            layerF7= makeInitLayer(R.raw.f8);
+            layerF8= makeInitLayer(R.raw.f9);
+            layerF9= makeInitLayer(R.raw.f10);
+            layerF10= makeInitLayer(R.raw.f11);
+            layerF11= makeInitLayer(R.raw.f12__f13);
+            layerF12= makeInitLayer(R.raw.f14__f15);
+            layerF13= makeInitLayer(R.raw.f16);
+            layerF14= makeInitLayer(R.raw.f17);
+            layerF15= makeInitLayer(R.raw.f18);
+            layerF16= makeInitLayer(R.raw.f19);
+            layerF17= makeInitLayer(R.raw.f20_1);
+            layerF18= makeInitLayer(R.raw.f20_2);
+            layerF19= makeInitLayer(R.raw.f24_1);
+            layerF20= makeInitLayer(R.raw.f24_2);
+            layerF21= makeInitLayer(R.raw.f24_3);
+            layerF22= makeInitLayer(R.raw.f24_3);
+            layerF23= makeInitLayer(R.raw.f24_4);
+            layerF24= makeInitLayer(R.raw.f24_5);
+            layerF25= makeInitLayer(R.raw.f24_6);
+            layerF26= makeInitLayer(R.raw.f24_7);
+            layerF27= makeInitLayer(R.raw.f24_8);
+            layerF28= makeInitLayer(R.raw.f24_9);
 
-            GeoJsonPolygonStyle polygonStyleB=layerB.getDefaultPolygonStyle();
-            polygonStyleB.setFillColor(0x32e74c3c);
-            polygonStyleB.setStrokeWidth(1.5f);
-            latLngBoundsArrayB = new ArrayList<>();
-            latLngBoundsArrayB.addAll(getLatLngBoundingBox(layerB));
+            layerL1= makeInitLayer(R.raw.l1_1);
+            layerL2= makeInitLayer(R.raw.l1_2);
+            layerL3= makeInitLayer(R.raw.l1_3);
+            layerL4= makeInitLayer(R.raw.l1_4);
+            layerL5= makeInitLayer(R.raw.l2_1);
+            layerL6= makeInitLayer(R.raw.l2_2);
+            layerL7= makeInitLayer(R.raw.l2_3);
+            layerL8= makeInitLayer(R.raw.l3_1);
+            layerL9= makeInitLayer(R.raw.l3_2);
+            layerL10= makeInitLayer(R.raw.l3_3);
+            layerL11= makeInitLayer(R.raw.l3_4);
+            layerL12= makeInitLayer(R.raw.l3_5);
+            layerL13= makeInitLayer(R.raw.l3_6);
+            layerL14= makeInitLayer(R.raw.l3_7);
+            layerL15= makeInitLayer(R.raw.l3_8);
+            layerL16= makeInitLayer(R.raw.l3_9);
+            layerL17= makeInitLayer(R.raw.l3_10);
+            layerL18= makeInitLayer(R.raw.l4_1);
+            layerL19= makeInitLayer(R.raw.l4_2);
+            layerL20= makeInitLayer(R.raw.l4_3);
 
-            GeoJsonPolygonStyle polygonStyleC=layerC.getDefaultPolygonStyle();
-            polygonStyleC.setFillColor(0x32e74c3c);
-            polygonStyleC.setStrokeWidth(1.5f);
-            latLngBoundsArrayC = new ArrayList<>();
-            latLngBoundsArrayC.addAll(getLatLngBoundingBox(layerC));
 
-            GeoJsonPolygonStyle polygonStyleD=layerD.getDefaultPolygonStyle();
-            polygonStyleD.setFillColor(0x32e74c3c);
-            polygonStyleD.setStrokeWidth(1.5f);
-            latLngBoundsArrayD = new ArrayList<>();
-            latLngBoundsArrayD.addAll(getLatLngBoundingBox(layerD));
+            latLngBoundsArray=makeLayerStyle(layer, 0x328043b4);
+            latLngBoundsArrayA=makeLayerStyle(layerA,0x328043b4);
+            latLngBoundsArrayB=makeLayerStyle(layerB,0x328043b4);
+            latLngBoundsArrayC=makeLayerStyle(layerC,0x328043b4);
+            latLngBoundsArrayD=makeLayerStyle(layerD,0x328043b4);
+            latLngBoundsArrayE=makeLayerStyle(layerE,0x328043b4);
+            latLngBoundsArray2=makeLayerStyle(layer2,0x328043b4);
+            latLngBoundsArray3=makeLayerStyle(layer3,0x328043b4);
+            latLngBoundsArray4=makeLayerStyle(layer4,0x328043b4);
 
-            GeoJsonPolygonStyle polygonStyleE=layerE.getDefaultPolygonStyle();
-            polygonStyleE.setFillColor(0x32e74c3c);
-            polygonStyleE.setStrokeWidth(1.5f);
-            latLngBoundsArrayE = new ArrayList<>();
-            latLngBoundsArrayE.addAll(getLatLngBoundingBox(layerE));
+            latLngBoundsArrayE1=makeLayerStyle(layerE1 ,0x32e74c3c);
+            latLngBoundsArrayE2=makeLayerStyle(layerE2 ,0x32e74c3c);
+            latLngBoundsArrayE3=makeLayerStyle(layerE3 ,0x32e74c3c);
+            latLngBoundsArrayE4=makeLayerStyle(layerE4 ,0x32e74c3c);
+            latLngBoundsArrayE5=makeLayerStyle(layerE5 ,0x32e74c3c);
+            latLngBoundsArrayE6=makeLayerStyle(layerE6 ,0x32e74c3c);
+            latLngBoundsArrayE7=makeLayerStyle(layerE7 ,0x32e74c3c);
+            latLngBoundsArrayE8=makeLayerStyle(layerE8 ,0x32e74c3c);
+            latLngBoundsArrayE9=makeLayerStyle(layerE9 ,0x32e74c3c);
+            latLngBoundsArrayE10=makeLayerStyle(layerE10 ,0x32e74c3c);
+            latLngBoundsArrayE11=makeLayerStyle(layerE11 ,0x32e74c3c);
+            latLngBoundsArrayE12=makeLayerStyle(layerE12 ,0x32e74c3c);
+            latLngBoundsArrayE13=makeLayerStyle(layerE13 ,0x32e74c3c);
+            latLngBoundsArrayE14=makeLayerStyle(layerE14 ,0x32e74c3c);
+            latLngBoundsArrayE15=makeLayerStyle(layerE15 ,0x32e74c3c);
+            latLngBoundsArrayE16=makeLayerStyle(layerE16 ,0x32e74c3c);
+            latLngBoundsArrayE17=makeLayerStyle(layerE17 ,0x32e74c3c);
+            latLngBoundsArrayE18=makeLayerStyle(layerE18 ,0x32e74c3c);
+            latLngBoundsArrayE19=makeLayerStyle(layerE19 ,0x32e74c3c);
+            latLngBoundsArrayE20=makeLayerStyle(layerE20 ,0x32e74c3c);
+            latLngBoundsArrayE21=makeLayerStyle(layerE21 ,0x32e74c3c);
+            latLngBoundsArrayE22=makeLayerStyle(layerE22 ,0x32e74c3c);
+            latLngBoundsArrayE23=makeLayerStyle(layerE23 ,0x32e74c3c);
+            latLngBoundsArrayE24=makeLayerStyle(layerE24 ,0x32e74c3c);
+            latLngBoundsArrayE25=makeLayerStyle(layerE25 ,0x32e74c3c);
+            latLngBoundsArrayE26=makeLayerStyle(layerE26 ,0x32e74c3c);
+            latLngBoundsArrayE27=makeLayerStyle(layerE27 ,0x32e74c3c);
+            latLngBoundsArrayE28=makeLayerStyle(layerE28 ,0x32e74c3c);
 
-           // layer2.addLayerToMap();
-            GeoJsonPolygonStyle polygonStyle2=layer2.getDefaultPolygonStyle();
-            polygonStyle2.setFillColor(0x32e74c3c);
-            polygonStyle2.setStrokeWidth(1.5f);
-            latLngBoundsArray2 = new ArrayList<>();
-            latLngBoundsArray2.addAll(getLatLngBoundingBox(layer2));
+            latLngBoundsArrayF1=makeLayerStyle(layerF1 ,0x32455A64);
+            latLngBoundsArrayF2=makeLayerStyle(layerF2 ,0x32455A64);
+            latLngBoundsArrayF3=makeLayerStyle(layerF3 ,0x32455A64);
+            latLngBoundsArrayF4=makeLayerStyle(layerF4 ,0x32455A64);
+            latLngBoundsArrayF5=makeLayerStyle(layerF5 ,0x32455A64);
+            latLngBoundsArrayF6=makeLayerStyle(layerF6 ,0x32455A64);
+            latLngBoundsArrayF7=makeLayerStyle(layerF7 ,0x32455A64);
+            latLngBoundsArrayF8=makeLayerStyle(layerF8 ,0x32455A64);
+            latLngBoundsArrayF9=makeLayerStyle(layerF9 ,0x32455A64);
+            latLngBoundsArrayF10=makeLayerStyle(layerF10 ,0x32455A64);
+            latLngBoundsArrayF11=makeLayerStyle(layerF11 ,0x32455A64);
+            latLngBoundsArrayF12=makeLayerStyle(layerF12 ,0x32455A64);
+            latLngBoundsArrayF13=makeLayerStyle(layerF13 ,0x32455A64);
+            latLngBoundsArrayF14=makeLayerStyle(layerF14 ,0x32455A64);
+            latLngBoundsArrayF15=makeLayerStyle(layerF15 ,0x32455A64);
+            latLngBoundsArrayF16=makeLayerStyle(layerF16 ,0x32455A64);
+            latLngBoundsArrayF17=makeLayerStyle(layerF17 ,0x32455A64);
+            latLngBoundsArrayF18=makeLayerStyle(layerF18 ,0x32455A64);
+            latLngBoundsArrayF19=makeLayerStyle(layerF19 ,0x32455A64);
+            latLngBoundsArrayF20=makeLayerStyle(layerF20 ,0x32455A64);
+            latLngBoundsArrayF21=makeLayerStyle(layerF21 ,0x32455A64);
+            latLngBoundsArrayF22=makeLayerStyle(layerF22 ,0x32455A64);
+            latLngBoundsArrayF23=makeLayerStyle(layerF23 ,0x32455A64);
+            latLngBoundsArrayF24=makeLayerStyle(layerF24 ,0x32455A64);
+            latLngBoundsArrayF25=makeLayerStyle(layerF25 ,0x32455A64);
+            latLngBoundsArrayF26=makeLayerStyle(layerF26 ,0x32455A64);
+            latLngBoundsArrayF27=makeLayerStyle(layerF27 ,0x32455A64);
+            latLngBoundsArrayF28=makeLayerStyle(layerF28 ,0x32455A64);
 
-            GeoJsonPolygonStyle polygonStyle3=layer3.getDefaultPolygonStyle();
-            polygonStyle3.setFillColor(0x32e74c3c);
-            polygonStyle3.setStrokeWidth(1.5f);
-             latLngBoundsArray3 = new ArrayList<>();
-            latLngBoundsArray3.addAll(getLatLngBoundingBox(layer3));
-
-            GeoJsonPolygonStyle polygonStyle4=layer4.getDefaultPolygonStyle();
-            polygonStyle4.setFillColor(0x32e74c3c);
-            polygonStyle4.setStrokeWidth(1.5f);
-             latLngBoundsArray4 = new ArrayList<>();
-            latLngBoundsArray4.addAll(getLatLngBoundingBox(layer4));
-
-         /*   // layer.addLayerToMap();
-            GeoJsonPolygonStyle polygonStyleE1=layerE1.getDefaultPolygonStyle();
-            polygonStyleE1.setFillColor(0x32e74c3c);
-            polygonStyleE1.setStrokeWidth(1.5f);
-            latLngBoundsArrayE1 = new ArrayList<>();
-            latLngBoundsArrayE1.addAll(getLatLngBoundingBox(layerE1));
-
-            // layer2.addLayerToMap();
-            GeoJsonPolygonStyle polygonStyleE2=layerE2.getDefaultPolygonStyle();
-            polygonStyleE2.setFillColor(0x32e74c3c);
-            polygonStyleE2.setStrokeWidth(1.5f);
-            latLngBoundsArrayE2 = new ArrayList<>();
-            latLngBoundsArrayE2.addAll(getLatLngBoundingBox(layerE2));
-
-            GeoJsonPolygonStyle polygonStyleE3=layerE3.getDefaultPolygonStyle();
-            polygonStyleE3.setFillColor(0x32e74c3c);
-            polygonStyleE3.setStrokeWidth(1.5f);
-            latLngBoundsArrayE3 = new ArrayList<>();
-            latLngBoundsArrayE3.addAll(getLatLngBoundingBox(layerE3));
-
-            GeoJsonPolygonStyle polygonStyleE4=layerE4.getDefaultPolygonStyle();
-            polygonStyleE4.setFillColor(0x32e74c3c);
-            polygonStyleE4.setStrokeWidth(1.5f);
-            latLngBoundsArrayE4 = new ArrayList<>();
-            latLngBoundsArrayE4.addAll(getLatLngBoundingBox(layerE4));
-
-            // layer.addLayerToMap();
-            GeoJsonPolygonStyle polygonStyleE5=layerE5.getDefaultPolygonStyle();
-            polygonStyleE5.setFillColor(0x32e74c3c);
-            polygonStyleE5.setStrokeWidth(1.5f);
-            latLngBoundsArrayE5 = new ArrayList<>();
-            latLngBoundsArrayE5.addAll(getLatLngBoundingBox(layerE5));
-
-            // layer2.addLayerToMap();
-            GeoJsonPolygonStyle polygonStyleE6=layerE6.getDefaultPolygonStyle();
-            polygonStyleE6.setFillColor(0x32e74c3c);
-            polygonStyleE6.setStrokeWidth(1.5f);
-            latLngBoundsArrayE6 = new ArrayList<>();
-            latLngBoundsArrayE6.addAll(getLatLngBoundingBox(layerE6));
-
-            GeoJsonPolygonStyle polygonStyleE7=layerE7.getDefaultPolygonStyle();
-            polygonStyleE7.setFillColor(0x32e74c3c);
-            polygonStyleE7.setStrokeWidth(1.5f);
-            latLngBoundsArrayE7 = new ArrayList<>();
-            latLngBoundsArrayE7.addAll(getLatLngBoundingBox(layerE7));
-
-            GeoJsonPolygonStyle polygonStyleE8=layerE8.getDefaultPolygonStyle();
-            polygonStyleE8.setFillColor(0x32e74c3c);
-            polygonStyleE8.setStrokeWidth(1.5f);
-            latLngBoundsArrayE8 = new ArrayList<>();
-            latLngBoundsArrayE8.addAll(getLatLngBoundingBox(layerE8));
-
-            // layer.addLayerToMap();
-            GeoJsonPolygonStyle polygonStyleE9=layerE9.getDefaultPolygonStyle();
-            polygonStyleE9.setFillColor(0x32e74c3c);
-            polygonStyleE9.setStrokeWidth(1.5f);
-            latLngBoundsArrayE9 = new ArrayList<>();
-            latLngBoundsArrayE9.addAll(getLatLngBoundingBox(layerE9));
-
-            // layer2.addLayerToMap();
-            GeoJsonPolygonStyle polygonStyleE10=layerE10.getDefaultPolygonStyle();
-            polygonStyleE10.setFillColor(0x32e74c3c);
-            polygonStyleE10.setStrokeWidth(1.5f);
-            latLngBoundsArrayE10 = new ArrayList<>();
-            latLngBoundsArrayE10.addAll(getLatLngBoundingBox(layerE10));
-
-            GeoJsonPolygonStyle polygonStyleE11=layerE11.getDefaultPolygonStyle();
-            polygonStyleE11.setFillColor(0x32e74c3c);
-            polygonStyleE11.setStrokeWidth(1.5f);
-            latLngBoundsArrayE11 = new ArrayList<>();
-            latLngBoundsArrayE11.addAll(getLatLngBoundingBox(layerE11));
-
-            GeoJsonPolygonStyle polygonStyleE12=layerE12.getDefaultPolygonStyle();
-            polygonStyleE12.setFillColor(0x32e74c3c);
-            polygonStyleE12.setStrokeWidth(1.5f);
-            latLngBoundsArrayE12 = new ArrayList<>();
-            latLngBoundsArrayE12.addAll(getLatLngBoundingBox(layerE12));
-
-            // layer.addLayerToMap();
-            GeoJsonPolygonStyle polygonStyleE13=layerE13.getDefaultPolygonStyle();
-            polygonStyleE13.setFillColor(0x32e74c3c);
-            polygonStyleE13.setStrokeWidth(1.5f);
-            latLngBoundsArrayE13 = new ArrayList<>();
-            latLngBoundsArrayE13.addAll(getLatLngBoundingBox(layerE13));
-
-            // layer2.addLayerToMap();
-            GeoJsonPolygonStyle polygonStyleE14=layerE14.getDefaultPolygonStyle();
-            polygonStyleE14.setFillColor(0x32e74c3c);
-            polygonStyleE14.setStrokeWidth(1.5f);
-            latLngBoundsArrayE14 = new ArrayList<>();
-            latLngBoundsArrayE14.addAll(getLatLngBoundingBox(layerE14));
-
-            GeoJsonPolygonStyle polygonStyleE15=layerE15.getDefaultPolygonStyle();
-            polygonStyleE15.setFillColor(0x32e74c3c);
-            polygonStyleE15.setStrokeWidth(1.5f);
-            latLngBoundsArrayE15 = new ArrayList<>();
-            latLngBoundsArrayE15.addAll(getLatLngBoundingBox(layerE15));
-
-             mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-                @Override
-                public void onMapClick(LatLng latLng) {
-
-                }
-            });
-
-               layer.setOnFeatureClickListener(MainActivity.this);
-            layerA.setOnFeatureClickListener(MainActivity.this);
-            layerB.setOnFeatureClickListener(MainActivity.this);
-            layerC.setOnFeatureClickListener(MainActivity.this);
-            layerD.setOnFeatureClickListener(MainActivity.this);
-            layerE.setOnFeatureClickListener(MainActivity.this);
-            layer2.setOnFeatureClickListener(MainActivity.this);
-            layer3.setOnFeatureClickListener(MainActivity.this);
-            layer4.setOnFeatureClickListener(MainActivity.this);
-
-            */
+            latLngBoundsArrayL1=makeLayerStyle(layerL1 ,0x32FFEA00);
+            latLngBoundsArrayL2=makeLayerStyle(layerL2 ,0x32FFEA00);
+            latLngBoundsArrayL3=makeLayerStyle(layerL3 ,0x32FFEA00);
+            latLngBoundsArrayL4=makeLayerStyle(layerL4 ,0x32FFEA00);
+            latLngBoundsArrayL5=makeLayerStyle(layerL5 ,0x32FFEA00);
+            latLngBoundsArrayL6=makeLayerStyle(layerL6 ,0x32FFEA00);
+            latLngBoundsArrayL7=makeLayerStyle(layerL7 ,0x32FFEA00);
+            latLngBoundsArrayL8=makeLayerStyle(layerL8 ,0x32FFEA00);
+            latLngBoundsArrayL9=makeLayerStyle(layerL9 ,0x32FFEA00);
+            latLngBoundsArrayL10=makeLayerStyle(layerL10 ,0x32FFEA00);
+            latLngBoundsArrayL11=makeLayerStyle(layerL11 ,0x32FFEA00);
+            latLngBoundsArrayL12=makeLayerStyle(layerL12 ,0x32FFEA00);
+            latLngBoundsArrayL13=makeLayerStyle(layerL13 ,0x32FFEA00);
+            latLngBoundsArrayL14=makeLayerStyle(layerL14 ,0x32FFEA00);
+            latLngBoundsArrayL15=makeLayerStyle(layerL15 ,0x32FFEA00);
+            latLngBoundsArrayL16=makeLayerStyle(layerL16 ,0x32FFEA00);
+            latLngBoundsArrayL17=makeLayerStyle(layerL17 ,0x32FFEA00);
+            latLngBoundsArrayL18=makeLayerStyle(layerL18 ,0x32FFEA00);
+            latLngBoundsArrayL19=makeLayerStyle(layerL19 ,0x32FFEA00);
+            latLngBoundsArrayL20=makeLayerStyle(layerL20 ,0x32FFEA00);
 
 
 
-           /* layer.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try {
-                        removeAllLayers();
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            makeLayerListerner(layerA);
-            makeLayerListerner(layerB);
-            makeLayerListerner(layerC);
-            makeLayerListerner(layerD);
-            makeLayerListerner(layerE);
-            layer2.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try {
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            layer3.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try{
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-            layer4.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try{
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-            layerE1.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try{
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-            layerE2.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try{
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-            layerE3.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try{
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-            layerE4.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try{
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-            layerE5.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try{
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-            layerE6.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try{
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-            layerE7.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try{
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-            layerE8.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try{
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-            layerE9.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try{
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-            layerE10.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try{
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-            layerE11.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try{
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-            layerE12.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try{
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-            layerE13.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try{
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-            layerE14.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try{
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-            layerE15.setOnFeatureClickListener(new Layer.OnFeatureClickListener() {
-                @Override
-                public void onFeatureClick(Feature feature) {
-                    try{
-                        if (hashMapMarker != null)
-                            if (hashMapMarker.get("otherLocMark") != null)
-                                removeUpMaker("otherLocMark");
-                        removeAllLayers();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-            */
-
+            // Do other setup activities here too, as described elsewhere in this tutorial.
+        // Turn on the My Location layer and the related control on the map.
+        updateLocationUI();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // Do other setup activities here too, as described elsewhere in this tutorial.
-        // Turn on the My Location layer and the related control on the map.
-        updateLocationUI();
-
         // Get the current location of the device and set the position of the map.
-       // getDeviceLocation();
     }
+
+
+    public GoogleMap.CancelableCallback cameraAnimation = new GoogleMap.CancelableCallback(){
+
+        @Override
+        public void onFinish()
+        {
+            if (stepZoom < stepZoomMax && stepZoom != stepToSpin)
+            {
+                stepZoom++;
+                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.builder()
+                        .target(latLngX)
+                        .zoom(initZoom + (stepZoomDetent * (stepZoom - 1)))
+                                //   .bearing(40*aniStep)
+                                //   .tilt(60)
+                        .build()), mapHopDelay, cameraAnimation);
+
+            }
+            else if (stepZoom >= stepZoomMax)// ending position hard coded for this application
+            {mMap.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.builder()
+                    .target(latLngX)
+                    .zoom(18)
+                            //  .bearing(0)
+                    .tilt(0)
+                    .build()));
+            }
+            else
+            {
+                if (stepSpin <= stepSpinMax)
+                {
+                    stepSpin++;
+                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.builder()
+                            .target(latLngX)
+                            .zoom(initZoom + stepZoomDetent * stepZoom)
+                            .bearing(stepSpinDetent * (stepSpin - 1))
+                            .tilt(60)
+                            .build()), mapHopDelay, cameraAnimation);
+                }
+                else
+                {
+                    stepZoom++;
+                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.builder()
+                            .target(latLngX)
+                            .zoom(initZoom + stepZoomDetent * stepZoom)
+                            .bearing(0)
+                            .tilt(0)
+                            .build()), mapHopDelay, cameraAnimation);
+                }
+            }
+        }
+
+        @Override
+        public void onCancel()
+        {}
+
+    };
 
     @Override
     public void onPolygonClick(Polygon polygon) {
@@ -975,264 +1094,103 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapClick(LatLng latLng) {
         try {
             int i = 0;
+            mFastItemAdapter.clear();
+            prefs.edit().putBoolean("CycloneCalled",false).commit();
+            prefs.edit().putBoolean("EarthquakeCalled",false).commit();
+            prefs.edit().putBoolean("FloodCalled",false).commit();
+            prefs.edit().putBoolean("LandslideCalled",false).commit();
 
             //Log.e("SahajLOG", " latlang > " + latLng + " " + layer.getBoundingBox().contains(latLng) + " " + layer.getBoundingBox().including(latLng));
             String MarkerString = "location marked";
 
+            makeLayerWork(layer , latLng, latLngBoundsArray,"Cyclone");
+            makeLayerWork(layerA, latLng, latLngBoundsArrayA,"Cyclone");
+            makeLayerWork(layerB, latLng, latLngBoundsArrayB,"Cyclone");
+            makeLayerWork(layerC, latLng, latLngBoundsArrayC,"Cyclone");
+            makeLayerWork(layerD, latLng, latLngBoundsArrayD,"Cyclone");
+            makeLayerWork(layerE, latLng, latLngBoundsArrayE,"Cyclone");
+            makeLayerWork(layer2, latLng, latLngBoundsArray2,"Cyclone");
+            makeLayerWork(layer3, latLng, latLngBoundsArray3,"Cyclone");
+            makeLayerWork(layer4, latLng, latLngBoundsArray4,"Cyclone");
 
-            i = 0;
-            if (layer != null)
-                for (LatLngBounds bbc : latLngBoundsArray) {
-                    Log.e("SahajLOG", "callad A1" + bbc.contains(latLng));
-                    if (bbc.contains(latLng)) {
-                        i++;
-                        layer.addLayerToMap();
-                        MarkerString = "Cyclone ZONE 1";
-                    } else if (layer.isLayerOnMap() && i == 0) {
-                        layer.removeLayerFromMap();
-                    }
-                }
-            makeLayerWork(layerA, latLng, latLngBoundsArrayA);
-            makeLayerWork(layerB, latLng, latLngBoundsArrayB);
-            makeLayerWork(layerC, latLng, latLngBoundsArrayC);
-            makeLayerWork(layerD, latLng, latLngBoundsArrayD);
-            makeLayerWork(layerE, latLng, latLngBoundsArrayE);
+            makeLayerWork(layerE1 , latLng, latLngBoundsArrayE1,"Earthquake");
+            makeLayerWork(layerE2 , latLng, latLngBoundsArrayE2,"Earthquake");
+            makeLayerWork(layerE3 , latLng, latLngBoundsArrayE3,"Earthquake");
+            makeLayerWork(layerE4 , latLng, latLngBoundsArrayE4,"Earthquake");
+            makeLayerWork(layerE5 , latLng, latLngBoundsArrayE5,"Earthquake");
+            makeLayerWork(layerE6 , latLng, latLngBoundsArrayE6,"Earthquake");
+            makeLayerWork(layerE7 , latLng, latLngBoundsArrayE7,"Earthquake");
+            makeLayerWork(layerE8 , latLng, latLngBoundsArrayE8,"Earthquake");
+            makeLayerWork(layerE9 , latLng, latLngBoundsArrayE9,"Earthquake");
+            makeLayerWork(layerE10 , latLng, latLngBoundsArrayE10,"Earthquake");
+            makeLayerWork(layerE11 , latLng, latLngBoundsArrayE11,"Earthquake");
+            makeLayerWork(layerE12 , latLng, latLngBoundsArrayE12,"Earthquake");
+            makeLayerWork(layerE13 , latLng, latLngBoundsArrayE13,"Earthquake");
+            makeLayerWork(layerE14 , latLng, latLngBoundsArrayE14,"Earthquake");
+            makeLayerWork(layerE15 , latLng, latLngBoundsArrayE15,"Earthquake");
+            makeLayerWork(layerE16 , latLng, latLngBoundsArrayE16,"Earthquake");
+            makeLayerWork(layerE17 , latLng, latLngBoundsArrayE17,"Earthquake");
+            makeLayerWork(layerE18 , latLng, latLngBoundsArrayE18,"Earthquake");
+            makeLayerWork(layerE19 , latLng, latLngBoundsArrayE19,"Earthquake");
+            makeLayerWork(layerE20 , latLng, latLngBoundsArrayE20,"Earthquake");
+            makeLayerWork(layerE21 , latLng, latLngBoundsArrayE21,"Earthquake");
+            makeLayerWork(layerE22 , latLng, latLngBoundsArrayE22,"Earthquake");
+            makeLayerWork(layerE23 , latLng, latLngBoundsArrayE23,"Earthquake");
+            makeLayerWork(layerE24 , latLng, latLngBoundsArrayE24,"Earthquake");
+            makeLayerWork(layerE25 , latLng, latLngBoundsArrayE25,"Earthquake");
+            makeLayerWork(layerE26 , latLng, latLngBoundsArrayE26,"Earthquake");
+            makeLayerWork(layerE27 , latLng, latLngBoundsArrayE27,"Earthquake");
+            makeLayerWork(layerE28 , latLng, latLngBoundsArrayE28,"Earthquake");
 
-            i = 0;
-            if (layer2 != null)
-                for (LatLngBounds bbc : latLngBoundsArray2) {
-                    Log.e("SahajLOG", "callad A2" + bbc.contains(latLng));
-                    if (bbc.contains(latLng)) {
-                        i++;
-                        layer2.addLayerToMap();
-                        MarkerString = "Cyclone ZONE 2";
-                    } else if (layer2.isLayerOnMap() && i == 0) {
-                        layer2.removeLayerFromMap();
-                    }
-                }
+            makeLayerWork(layerF1 , latLng, latLngBoundsArrayF1,"Flood");
+            makeLayerWork(layerF2 , latLng, latLngBoundsArrayF2,"Flood");
+            makeLayerWork(layerF3 , latLng, latLngBoundsArrayF3,"Flood");
+            makeLayerWork(layerF4 , latLng, latLngBoundsArrayF4,"Flood");
+            makeLayerWork(layerF5 , latLng, latLngBoundsArrayF5,"Flood");
+            makeLayerWork(layerF6 , latLng, latLngBoundsArrayF6,"Flood");
+            makeLayerWork(layerF7 , latLng, latLngBoundsArrayF7,"Flood");
+            makeLayerWork(layerF8 , latLng, latLngBoundsArrayF8,"Flood");
+            makeLayerWork(layerF9 , latLng, latLngBoundsArrayF9,"Flood");
+            makeLayerWork(layerF10 , latLng, latLngBoundsArrayF10,"Flood");
+            makeLayerWork(layerF11 , latLng, latLngBoundsArrayF11,"Flood");
+            makeLayerWork(layerF12 , latLng, latLngBoundsArrayF12,"Flood");
+            makeLayerWork(layerF13 , latLng, latLngBoundsArrayF13,"Flood");
+            makeLayerWork(layerF14 , latLng, latLngBoundsArrayF14,"Flood");
+            makeLayerWork(layerF15 , latLng, latLngBoundsArrayF15,"Flood");
+            makeLayerWork(layerF16 , latLng, latLngBoundsArrayF16,"Flood");
+            makeLayerWork(layerF17 , latLng, latLngBoundsArrayF17,"Flood");
+            makeLayerWork(layerF18 , latLng, latLngBoundsArrayF18,"Flood");
+            makeLayerWork(layerF19 , latLng, latLngBoundsArrayF19,"Flood");
+            makeLayerWork(layerF20 , latLng, latLngBoundsArrayF20,"Flood");
+            makeLayerWork(layerF21 , latLng, latLngBoundsArrayF21,"Flood");
+            makeLayerWork(layerF22 , latLng, latLngBoundsArrayF22,"Flood");
+            makeLayerWork(layerF23 , latLng, latLngBoundsArrayF23,"Flood");
+            makeLayerWork(layerF24 , latLng, latLngBoundsArrayF24,"Flood");
+            makeLayerWork(layerF25 , latLng, latLngBoundsArrayF25,"Flood");
+            makeLayerWork(layerF26 , latLng, latLngBoundsArrayF26,"Flood");
+            makeLayerWork(layerF27 , latLng, latLngBoundsArrayF27,"Flood");
+            makeLayerWork(layerF28 , latLng, latLngBoundsArrayF28,"Flood");
 
-            i = 0;
-            if (layer3 != null)
-                for (LatLngBounds bbc : latLngBoundsArray3) {
-                    Log.e("SahajLOG", "callad A3" + bbc.contains(latLng));
-                    if (bbc.contains(latLng)) {
-                        i++;
-                        layer3.addLayerToMap();
-                        MarkerString = "Cyclone ZONE 3";
-                    } else if (layer3.isLayerOnMap() && i == 0) {
-                        layer3.removeLayerFromMap();
-                    }
-                }
-
-
-            i = 0;
-            if (layer4 != null)
-                for (LatLngBounds bbc : latLngBoundsArray4) {
-                    Log.e("SahajLOG", "callad A4" + bbc.contains(latLng));
-                    if (bbc.contains(latLng)) {
-                        i++;
-                        layer4.addLayerToMap();
-                        MarkerString = "Cyclone ZONE 4";
-                    } else if (layer4.isLayerOnMap() && i == 0) {
-                        layer4.removeLayerFromMap();
-                    }
-                }
-
-                     /*   i = 0;
-                        if (layerE1 != null)
-                            for (LatLngBounds bbc : latLngBoundsArrayE1) {
-                                Log.e("SahajLOG", "callad AE1" + bbc.contains(latLng));
-                                if (bbc.contains(latLng)) {
-                                    i++;
-                                    layerE1.addLayerToMap();
-                                    MarkerString = "Cyclone ZONE 4";
-                                } else if (layerE1.isLayerOnMap() && i == 0) {
-                                    layerE1.removeLayerFromMap();
-                                }
-                            }
-
-                        i = 0;
-                        if (layerE2 != null)
-                            for (LatLngBounds bbc : latLngBoundsArrayE2) {
-                                Log.e("SahajLOG", "callad A4" + bbc.contains(latLng));
-                                if (bbc.contains(latLng)) {
-                                    i++;
-                                    layerE2.addLayerToMap();
-                                    MarkerString = "Cyclone ZONE 4";
-                                } else if (layerE2.isLayerOnMap() && i == 0) {
-                                    layerE2.removeLayerFromMap();
-                                }
-                            }
-
-                        i = 0;
-                        if (layerE3 != null)
-                            for (LatLngBounds bbc : latLngBoundsArrayE3) {
-                                Log.e("SahajLOG", "callad A4" + bbc.contains(latLng));
-                                if (bbc.contains(latLng)) {
-                                    i++;
-                                    layerE3.addLayerToMap();
-                                    MarkerString = "Cyclone ZONE 4";
-                                } else if (layerE3.isLayerOnMap() && i == 0) {
-                                    layerE3.removeLayerFromMap();
-                                }
-                            }
-
-                        i = 0;
-                        if (layerE4 != null)
-                            for (LatLngBounds bbc : latLngBoundsArrayE4) {
-                                Log.e("SahajLOG", "callad A4" + bbc.contains(latLng));
-                                if (bbc.contains(latLng)) {
-                                    i++;
-                                    layerE4.addLayerToMap();
-                                    MarkerString = "Cyclone ZONE 4";
-                                } else if (layerE4.isLayerOnMap() && i == 0) {
-                                    layerE4.removeLayerFromMap();
-                                }
-                            }
-
-                        i = 0;
-                        if (layerE5 != null)
-                            for (LatLngBounds bbc : latLngBoundsArrayE5) {
-                                Log.e("SahajLOG", "callad A4" + bbc.contains(latLng));
-                                if (bbc.contains(latLng)) {
-                                    i++;
-                                    layerE5.addLayerToMap();
-                                    MarkerString = "Cyclone ZONE 4";
-                                } else if (layerE5.isLayerOnMap() && i == 0) {
-                                    layerE5.removeLayerFromMap();
-                                }
-                            }
-
-                        i = 0;
-                        if (layerE6 != null)
-                            for (LatLngBounds bbc : latLngBoundsArrayE6) {
-                                Log.e("SahajLOG", "callad A4" + bbc.contains(latLng));
-                                if (bbc.contains(latLng)) {
-                                    i++;
-                                    layerE6.addLayerToMap();
-                                    MarkerString = "Cyclone ZONE 4";
-                                } else if (layerE6.isLayerOnMap() && i == 0) {
-                                    layerE6.removeLayerFromMap();
-                                }
-                            }
-
-                        i = 0;
-                        if (layerE7 != null)
-                            for (LatLngBounds bbc : latLngBoundsArrayE7) {
-                                Log.e("SahajLOG", "callad A4" + bbc.contains(latLng));
-                                if (bbc.contains(latLng)) {
-                                    i++;
-                                    layerE7.addLayerToMap();
-                                    MarkerString = "Cyclone ZONE 4";
-                                } else if (layerE7.isLayerOnMap() && i == 0) {
-                                    layerE7.removeLayerFromMap();
-                                }
-                            }
-
-                        i = 0;
-                        if (layerE8 != null)
-                            for (LatLngBounds bbc : latLngBoundsArrayE8) {
-                                Log.e("SahajLOG", "callad A4" + bbc.contains(latLng));
-                                if (bbc.contains(latLng)) {
-                                    i++;
-                                    layerE8.addLayerToMap();
-                                    MarkerString = "Cyclone ZONE 4";
-                                } else if (layerE8.isLayerOnMap() && i == 0) {
-                                    layerE8.removeLayerFromMap();
-                                }
-                            }
-
-                        i = 0;
-                        if (layerE9 != null)
-                            for (LatLngBounds bbc : latLngBoundsArrayE9) {
-                                Log.e("SahajLOG", "callad A4" + bbc.contains(latLng));
-                                if (bbc.contains(latLng)) {
-                                    i++;
-                                    layerE9.addLayerToMap();
-                                    MarkerString = "Cyclone ZONE 4";
-                                } else if (layerE9.isLayerOnMap() && i == 0) {
-                                    layerE9.removeLayerFromMap();
-                                }
-                            }
-
-                        i = 0;
-                        if (layerE10 != null)
-                            for (LatLngBounds bbc : latLngBoundsArrayE10) {
-                                Log.e("SahajLOG", "callad A4" + bbc.contains(latLng));
-                                if (bbc.contains(latLng)) {
-                                    i++;
-                                    layerE10.addLayerToMap();
-                                    MarkerString = "Cyclone ZONE 4";
-                                } else if (layerE10.isLayerOnMap() && i == 0) {
-                                    layerE10.removeLayerFromMap();
-                                }
-                            }
-
-                        i = 0;
-                        if (layerE11 != null)
-                            for (LatLngBounds bbc : latLngBoundsArrayE11) {
-                                Log.e("SahajLOG", "callad A4" + bbc.contains(latLng));
-                                if (bbc.contains(latLng)) {
-                                    i++;
-                                    layerE11.addLayerToMap();
-                                    MarkerString = "Cyclone ZONE 4";
-                                } else if (layerE11.isLayerOnMap() && i == 0) {
-                                    layerE11.removeLayerFromMap();
-                                }
-                            }
-
-                        i = 0;
-                        if (layerE12 != null)
-                            for (LatLngBounds bbc : latLngBoundsArrayE12) {
-                                Log.e("SahajLOG", "callad A4" + bbc.contains(latLng));
-                                if (bbc.contains(latLng)) {
-                                    i++;
-                                    layerE12.addLayerToMap();
-                                    MarkerString = "Cyclone ZONE 4";
-                                } else if (layerE12.isLayerOnMap() && i == 0) {
-                                    layerE12.removeLayerFromMap();
-                                }
-                            }
-
-                        i = 0;
-                        if (layerE13 != null)
-                            for (LatLngBounds bbc : latLngBoundsArrayE13) {
-                                Log.e("SahajLOG", "callad A4" + bbc.contains(latLng));
-                                if (bbc.contains(latLng)) {
-                                    i++;
-                                    layerE13.addLayerToMap();
-                                    MarkerString = "Cyclone ZONE 4";
-                                } else if (layerE13.isLayerOnMap() && i == 0) {
-                                    layerE13.removeLayerFromMap();
-                                }
-                            }
-
-                        i = 0;
-                        if (layerE14 != null)
-                            for (LatLngBounds bbc : latLngBoundsArrayE14) {
-                                Log.e("SahajLOG", "callad A4" + bbc.contains(latLng));
-                                if (bbc.contains(latLng)) {
-                                    i++;
-                                    layerE14.addLayerToMap();
-                                    MarkerString = "Cyclone ZONE 4";
-                                } else if (layerE14.isLayerOnMap() && i == 0) {
-                                    layerE14.removeLayerFromMap();
-                                }
-                            }
-
-                        i = 0;
-                        if (layerE15 != null)
-                            for (LatLngBounds bbc : latLngBoundsArrayE15) {
-                                Log.e("SahajLOG", "callad A4" + bbc.contains(latLng));
-                                if (bbc.contains(latLng)) {
-                                    i++;
-                                    layerE15.addLayerToMap();
-                                    MarkerString = "Cyclone ZONE 4";
-                                } else if (layerE15.isLayerOnMap() && i == 0) {
-                                    layerE15.removeLayerFromMap();
-                                }
-                            }
-                            */
+            makeLayerWork(layerL1 , latLng, latLngBoundsArrayL1,"Landslide");
+            makeLayerWork(layerL2 , latLng, latLngBoundsArrayL2,"Landslide");
+            makeLayerWork(layerL3 , latLng, latLngBoundsArrayL3,"Landslide");
+            makeLayerWork(layerL4 , latLng, latLngBoundsArrayL4,"Landslide");
+            makeLayerWork(layerL5 , latLng, latLngBoundsArrayL5,"Landslide");
+            makeLayerWork(layerL6 , latLng, latLngBoundsArrayL6,"Landslide");
+            makeLayerWork(layerL7 , latLng, latLngBoundsArrayL7,"Landslide");
+            makeLayerWork(layerL8 , latLng, latLngBoundsArrayL8,"Landslide");
+            makeLayerWork(layerL9 , latLng, latLngBoundsArrayL9,"Landslide");
+            makeLayerWork(layerL10 , latLng, latLngBoundsArrayL10,"Landslide");
+            makeLayerWork(layerL11 , latLng, latLngBoundsArrayL11,"Landslide");
+            makeLayerWork(layerL12 , latLng, latLngBoundsArrayL12,"Landslide");
+            makeLayerWork(layerL13 , latLng, latLngBoundsArrayL13,"Landslide");
+            makeLayerWork(layerL14 , latLng, latLngBoundsArrayL14,"Landslide");
+            makeLayerWork(layerL15 , latLng, latLngBoundsArrayL15,"Landslide");
+            makeLayerWork(layerL16 , latLng, latLngBoundsArrayL16,"Landslide");
+            makeLayerWork(layerL17 , latLng, latLngBoundsArrayL17,"Landslide");
+            makeLayerWork(layerL18 , latLng, latLngBoundsArrayL18,"Landslide");
+            makeLayerWork(layerL19 , latLng, latLngBoundsArrayL19,"Landslide");
+            makeLayerWork(layerL20 , latLng, latLngBoundsArrayL20,"Landslide");
 
             if (hashMapMarker != null) {
                 if (hashMapMarker.get("otherLocMark") != null) {
@@ -1248,21 +1206,79 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private Boolean makeLayerWork(GeoJsonLayer layer,LatLng latLng,List<LatLngBounds> latLngBoundsArray){
+    private Boolean makeLayerWork(GeoJsonLayer layer,LatLng latLng,List<LatLngBounds> latLngBoundsArray,String DisasterType){
         int i = 0;
         Boolean markerCalled=false;
         if (layer != null)
             for (LatLngBounds bbc : latLngBoundsArray) {
                 Log.e("SahajLOG", "callad A1" + bbc.contains(latLng));
                 if (bbc.contains(latLng)) {
+                    if (!prefs.getBoolean(DisasterType+"Called",false)){
+                        MainUpRecyclerItemAdapter sMainUpRecyclerItemAdapter=new MainUpRecyclerItemAdapter();
+                        sMainUpRecyclerItemAdapter.setContext(MainActivity.this);
+                        sMainUpRecyclerItemAdapter.setDisasterType(DisasterType);
+                        sMainUpRecyclerItemAdapter.setLayer(layer);
+                        sMainUpRecyclerItemAdapter.setLatLng(latLng);
+                        sMainUpRecyclerItemAdapter.setLatLngBoundsArray(latLngBoundsArray);
+                        addItemRecyclerUp(sMainUpRecyclerItemAdapter);
+                        prefs.edit().putBoolean(DisasterType+"Called",true).commit();
+                        mFastItemAdapter.notifyAdapterDataSetChanged();
+                    }
+                    //Log.e("SahajLOG", "count "+mFastItemAdapter.getItemAdapter().getItemCount()+mFastItemAdapter.getAdapterItems());
+                   // if (mFastItemAdapter.getItemAdapter().getItemCount()>0){
+                        if (mLinearLayoutUp.getVisibility()==View.GONE) {
+                            Log.e("SahajLOG", "called*(*(*");
+                            //mLinearLayoutUp.setVisibility(View.VISIBLE);
+                           // mLinearLayoutUp.setAlpha(0.0f);
+                            Log.e("SahajLOG", "height*********** "+mLinearLayoutUp.getHeight());
+                            mLinearLayoutUp.setTranslationY(mLinearLayoutUp.getHeight());
+                            mLinearLayoutUp.animate()
+                                    .setDuration(400)
+                                    .translationY(0)
+                                  //  .alpha(1.0f)
+                                    .setListener(new AnimatorListenerAdapter() {
+                                        @Override
+                                        public void onAnimationEnd(Animator animation) {
+                                            Log.e("SahajLOG", "calledYOYOYOYO**********");
+                                            super.onAnimationEnd(animation);
+                                            mLinearLayoutUp.setVisibility(View.VISIBLE);
+                                            mFabBack.setVisibility(View.VISIBLE);
+                                            mFabMulti.setVisibility(View.GONE);
+                                        }
+                                    });
+                        }
+                   // }
                     i++;
                     layer.addLayerToMap();
                     markerCalled = true;
                 } else if (layer.isLayerOnMap() && i == 0) {
                     layer.removeLayerFromMap();
                 }
+                /**/
             }
         return markerCalled;
+    }
+
+    private ArrayList<LatLngBounds> makeLayerStyle(GeoJsonLayer layer, int color){
+        GeoJsonPolygonStyle polygonStyle=layer.getDefaultPolygonStyle();
+        polygonStyle.setFillColor(color);
+        polygonStyle.setStrokeWidth(1.5f);
+        ArrayList<LatLngBounds> latLngBoundsArray=new ArrayList<>();
+        latLngBoundsArray.addAll(getLatLngBoundingBox(layer));
+        return latLngBoundsArray;
+    }
+
+    private GeoJsonLayer makeInitLayer(int resIdJson){
+        try {
+            GeoJsonLayer layerX = new GeoJsonLayer(mMap, resIdJson,
+                    getApplicationContext());
+            return layerX;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private void removeAllLayers(){
@@ -1302,6 +1318,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (layerE3!=null)
             if (layerE3.isLayerOnMap())
                 layerE3.removeLayerFromMap();
+        if (layerE4!=null)
+            if (layerE4.isLayerOnMap())
+                layerE4.removeLayerFromMap();
         if (layerE5!=null)
             if (layerE5.isLayerOnMap())
                 layerE5.removeLayerFromMap();
@@ -1335,8 +1354,197 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (layerE15!=null)
             if (layerE15.isLayerOnMap())
                 layerE15.removeLayerFromMap();
+        if (layerE16!=null)
+            if (layerE16.isLayerOnMap())
+                layerE16.removeLayerFromMap();
+        if (layerE17!=null)
+            if (layerE17.isLayerOnMap())
+                layerE17.removeLayerFromMap();
+        if (layerE18!=null)
+            if (layerE18.isLayerOnMap())
+                layerE18.removeLayerFromMap();
+        if (layerE19!=null)
+            if (layerE19.isLayerOnMap())
+                layerE19.removeLayerFromMap();
+        if (layerE20!=null)
+            if (layerE20.isLayerOnMap())
+                layerE20.removeLayerFromMap();
+        if (layerE21!=null)
+            if (layerE21.isLayerOnMap())
+                layerE21.removeLayerFromMap();
+        if (layerE22!=null)
+            if (layerE22.isLayerOnMap())
+                layerE22.removeLayerFromMap();
+        if (layerE23!=null)
+            if (layerE23.isLayerOnMap())
+                layerE23.removeLayerFromMap();
+        if (layerE24!=null)
+            if (layerE24.isLayerOnMap())
+                layerE24.removeLayerFromMap();
+        if (layerE25!=null)
+            if (layerE25.isLayerOnMap())
+                layerE25.removeLayerFromMap();
+        if (layerE26!=null)
+            if (layerE26.isLayerOnMap())
+                layerE26.removeLayerFromMap();
+        if (layerE27!=null)
+            if (layerE27.isLayerOnMap())
+                layerE27.removeLayerFromMap();
+        if (layerE28!=null)
+            if (layerE28.isLayerOnMap())
+                layerE28.removeLayerFromMap();
+
+        if (layerF1!=null)
+            if (layerF1.isLayerOnMap())
+                layerF1.removeLayerFromMap();
+        if (layerF2!=null)
+            if (layerF2.isLayerOnMap())
+                layerF2.removeLayerFromMap();
+        if (layerF3!=null)
+            if (layerF3.isLayerOnMap())
+                layerF3.removeLayerFromMap();
+        if (layerF5!=null)
+            if (layerF5.isLayerOnMap())
+                layerF5.removeLayerFromMap();
+        if (layerF6!=null)
+            if (layerF6.isLayerOnMap())
+                layerF6.removeLayerFromMap();
+        if (layerF7!=null)
+            if (layerF7.isLayerOnMap())
+                layerF7.removeLayerFromMap();
+        if (layerF8!=null)
+            if (layerF8.isLayerOnMap())
+                layerF8.removeLayerFromMap();
+        if (layerF9!=null)
+            if (layerF9.isLayerOnMap())
+                layerF9.removeLayerFromMap();
+        if (layerF10!=null)
+            if (layerF10.isLayerOnMap())
+                layerF10.removeLayerFromMap();
+        if (layerF11!=null)
+            if (layerF11.isLayerOnMap())
+                layerF11.removeLayerFromMap();
+        if (layerF12!=null)
+            if (layerF12.isLayerOnMap())
+                layerF12.removeLayerFromMap();
+        if (layerF13!=null)
+            if (layerF13.isLayerOnMap())
+                layerF13.removeLayerFromMap();
+        if (layerF14!=null)
+            if (layerF14.isLayerOnMap())
+                layerF14.removeLayerFromMap();
+        if (layerF15!=null)
+            if (layerF15.isLayerOnMap())
+                layerF15.removeLayerFromMap();
+        if (layerF16!=null)
+            if (layerF16.isLayerOnMap())
+                layerF16.removeLayerFromMap();
+        if (layerF17!=null)
+            if (layerF17.isLayerOnMap())
+                layerF17.removeLayerFromMap();
+        if (layerF18!=null)
+            if (layerF18.isLayerOnMap())
+                layerF18.removeLayerFromMap();
+        if (layerF19!=null)
+            if (layerF19.isLayerOnMap())
+                layerF19.removeLayerFromMap();
+        if (layerF20!=null)
+            if (layerF20.isLayerOnMap())
+                layerF20.removeLayerFromMap();
+        if (layerF21!=null)
+            if (layerF21.isLayerOnMap())
+                layerF21.removeLayerFromMap();
+        if (layerF22!=null)
+            if (layerF22.isLayerOnMap())
+                layerF22.removeLayerFromMap();
+        if (layerF23!=null)
+            if (layerF23.isLayerOnMap())
+                layerF23.removeLayerFromMap();
+        if (layerF24!=null)
+            if (layerF24.isLayerOnMap())
+                layerF24.removeLayerFromMap();
+        if (layerF25!=null)
+            if (layerF25.isLayerOnMap())
+                layerF25.removeLayerFromMap();
+        if (layerF26!=null)
+            if (layerF26.isLayerOnMap())
+                layerF26.removeLayerFromMap();
+        if (layerF27!=null)
+            if (layerF27.isLayerOnMap())
+                layerF27.removeLayerFromMap();
+        if (layerF28!=null)
+            if (layerF28.isLayerOnMap())
+                layerF28.removeLayerFromMap();
+
+        if (layerL1!=null)
+            if (layerL1.isLayerOnMap())
+                layerL1.removeLayerFromMap();
+        if (layerL2!=null)
+            if (layerL2.isLayerOnMap())
+                layerL2.removeLayerFromMap();
+        if (layerL3!=null)
+            if (layerL3.isLayerOnMap())
+                layerL3.removeLayerFromMap();
+        if (layerL5!=null)
+            if (layerL5.isLayerOnMap())
+                layerL5.removeLayerFromMap();
+        if (layerL6!=null)
+            if (layerL6.isLayerOnMap())
+                layerL6.removeLayerFromMap();
+        if (layerL7!=null)
+            if (layerL7.isLayerOnMap())
+                layerL7.removeLayerFromMap();
+        if (layerL8!=null)
+            if (layerL8.isLayerOnMap())
+                layerL8.removeLayerFromMap();
+        if (layerL9!=null)
+            if (layerL9.isLayerOnMap())
+                layerL9.removeLayerFromMap();
+        if (layerL10!=null)
+            if (layerL10.isLayerOnMap())
+                layerL10.removeLayerFromMap();
+        if (layerL11!=null)
+            if (layerL11.isLayerOnMap())
+                layerL11.removeLayerFromMap();
+        if (layerL12!=null)
+            if (layerL12.isLayerOnMap())
+                layerL12.removeLayerFromMap();
+        if (layerL13!=null)
+            if (layerL13.isLayerOnMap())
+                layerL13.removeLayerFromMap();
+        if (layerL14!=null)
+            if (layerL14.isLayerOnMap())
+                layerL14.removeLayerFromMap();
+        if (layerL15!=null)
+            if (layerL15.isLayerOnMap())
+                layerL15.removeLayerFromMap();
+        if (layerL16!=null)
+            if (layerL16.isLayerOnMap())
+                layerL16.removeLayerFromMap();
+        if (layerL17!=null)
+            if (layerL17.isLayerOnMap())
+                layerL17.removeLayerFromMap();
+        if (layerL18!=null)
+            if (layerL18.isLayerOnMap())
+                layerL18.removeLayerFromMap();
+        if (layerL19!=null)
+            if (layerL19.isLayerOnMap())
+                layerL19.removeLayerFromMap();
+        if (layerL20!=null)
+            if (layerL20.isLayerOnMap())
+                layerL20.removeLayerFromMap();
+
     }
 
+    private void addItemRecyclerUp(final MainUpRecyclerItemAdapter sMainUpRecyclerItemAdapter) {
+        mRecyclerView.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.e("SahajLOG", "MainUpItem "+sMainUpRecyclerItemAdapter.getDisasterType());
+                mFastItemAdapter.add(sMainUpRecyclerItemAdapter);
+            }
+        });
+    }
 
 
     @Override
@@ -1366,7 +1574,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onConnectionSuspended(int i) {
 
     }
-
 
     @Override
     public void onLocationChanged(Location location) {
@@ -1429,6 +1636,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         //return boundingBox;
         return boundingBoxFromBuilderArray;
     }
+
     private List<LatLng> getCoordinatesFromGeometry(Geometry geometry) {
        // Log.e("SahajLOG", "geometry2 > "+geometry.getGeometryType());
 

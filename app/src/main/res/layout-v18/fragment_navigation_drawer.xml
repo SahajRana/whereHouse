@@ -26,7 +26,7 @@
                 android:src="@drawable/map_notiback"/>
             <LinearLayout
                 android:clickable="true"
-                android:background="#5c1f222b"
+                android:background="#d21f222b"
                 android:layout_width="match_parent"
                 android:layout_height="150dp"/>
         </FrameLayout>
